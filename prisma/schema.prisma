@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model informasi_fisik {
+  idfisik         Int      @id @default(autoincrement())
+  idsapi          Int
+  berat_badan     Float
+  tanggal_timbang DateTime @db.Date
+
+  @@index([idsapi], map: "produksi_idsapi_fkey")
+}
+
+model maintenance {
+  idmaintenance     Int                      @id @default(autoincrement())
+  idsapi            Int
+  teknisi_uid       String                   @db.VarChar(10)
+  jenis_tindakan    String                   @db.VarChar(150)
+  kondisi_alat      maintenance_kondisi_alat @default(Normal)
+  Keterangan        String?                  @db.Text
+  maintenanceUpdate DateTime                 @default(now())
+
+  @@index([idsapi], map: "maintenance_idsapi_fkey")
+  @@index([teknisi_uid], map: "maintenance_teknisi_uid_fkey")
+}
+
+model pengguna {
+  uid          String        @id @db.VarChar(10)
+  firebase_uid String?       @unique @db.VarChar(128)
+  no_kode      String        @db.VarChar(8)
+  name         String        @db.VarChar(100)
+  email        String        @unique @db.VarChar(100)
+  password     String        @db.VarChar(255)
+  role         pengguna_role @default(Peternak)
+  image        String?       @db.Text
+  alamat       String?       @db.VarChar(255)
+  createdAt    DateTime      @default(now())
+  lastLogin    DateTime      @default(now())
+
+  @@unique([uid, role])
+}
+
+model peringatan_verifikasi {
+  id        String   @id @db.VarChar(36)
+  email     String   @db.VarChar(100)
+  jenis     String   @db.VarChar(50)
+  pesan     String   @db.Text
+  metadata  String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([email])
+}
+
+model riwayatmedis {
+  id_medis       Int                         @id @default(autoincrement())
+  idsapi         Int
+  jenis_tindakan riwayatmedis_jenis_tindakan
+  tanggal_medis  DateTime                    @db.Date
+  catatan        String?                     @db.Text
+
+  @@index([idsapi], map: "riwayatmedis_idsapi_fkey")
+}
+
+model riwayatreproduksi {
+  id_reproduksi Int      @id @default(autoincrement())
+  idsapi        Int
+  tanggal_ib    DateTime @db.Date
+  nama_pejantan String   @db.VarChar(100)
+  keterangan    String?  @db.Text
+
+  @@index([idsapi], map: "riwayatreproduksi_idsapi_fkey")
+}
+
+model sapi {
+  idsapi           Int                @id @default(autoincrement())
+  nomor_eartag     String?            @unique
+  nama_sapi        String
+  jenis_sapi       String
+  jenis_kelamin    sapi_jenis_kelamin
+  kandang          sapi_kandang
+  tanggal_lahir    DateTime           @db.Date
+  status_hidup     sapi_status_hidup  @default(Sehat)
+  keteranganStatus String?            @db.Text
+  statusUpdate     DateTime?          @db.Date
+  sapiUpdate       DateTime           @default(now())
+}
+
+model verifikasi_email {
+  id             String    @id @db.VarChar(36)
+  email          String    @db.VarChar(100)
+  codeHash       String    @db.VarChar(255)
+  payload        String    @db.Text
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  resendCount    Int       @default(0)
+  lastResendAt   DateTime?
+  cooldownUntil  DateTime?
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+
+  @@index([email])
+}
+
+enum riwayatmedis_jenis_tindakan {
+  Obat_Cacing
+  Vaksin_PMK
+  Vaksin_LSD
+}
+
+enum sapi_jenis_kelamin {
+  Jantan
+  Betina
+}
+
+enum maintenance_kondisi_alat {
+  Normal
+  Rusak
+  Perbaikan
+}
+
+enum sapi_kandang {
+  Individu
+  KandangDara
+  KoloniBesar
+}
+
+enum pengguna_role {
+  Peternak
+  Teknisi
+}
+
+enum sapi_status_hidup {
+  Sehat
+  Sakit
+  Mati
+}
