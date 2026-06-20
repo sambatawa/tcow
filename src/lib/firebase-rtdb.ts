@@ -39,8 +39,11 @@ function pickNumber(obj: RawSensorNode, keys: string[]): number | null {
   for (const k of keys) {
     const v = obj[k];
     if (typeof v === "number" && !Number.isNaN(v)) return v;
-    if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) {
-      return Number(v);
+    if (typeof v === "string") {
+      const normalized = v.trim().replace(/,/g, "");
+      if (normalized !== "" && !Number.isNaN(Number(normalized))) {
+        return Number(normalized);
+      }
     }
   }
   return null;
@@ -54,16 +57,36 @@ function pickString(obj: RawSensorNode, keys: string[]): string | null {
   return null;
 }
 
-function deriveStatus(
-  battery: number,
-  temperature: number | null,
-  staleMinutes: number
-): SensorReading["status"] {
-  if (staleMinutes > 30 || battery <= 0) return "Error";
-  if (battery < 30) return "Baterai Rendah";
-  if (temperature !== null && (temperature > 40.5 || temperature < 36)) {
-    return "Error";
+function parseSnapshotTimestamp(timeKey: string, node: RawSensorNode): number | null {
+  const timestampValue = node["timestamp"] ?? node["updatedAt"] ?? node["time"] ?? node["lastUpdate"];
+  const timestampNumber = pickNumber({ timestamp: timestampValue }, ["timestamp"]);
+  if (timestampNumber !== null) return timestampNumber;
+
+  if (typeof timeKey === "string") {
+    if (timeKey.includes("_")) {
+      const [datePart, timePart] = timeKey.split("_");
+      const formattedTime = timePart.replace(/-/g, ":");
+      const parsed = Date.parse(`${datePart}T${formattedTime}`);
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+
+    const normalizedKey = timeKey.replace(/_/g, "-");
+    const parsed = Date.parse(normalizedKey);
+    if (!Number.isNaN(parsed)) return parsed;
   }
+
+  return null;
+}
+
+function deriveStatus(
+  battery: number | null,
+  temperature: number | null,
+  staleMinutes: number | null
+): SensorReading["status"] {
+  if (temperature === null) return "Error";
+  if (battery !== null && battery < 30) return "Baterai Rendah";
+  if (temperature > 40.5 || temperature < 36) return "Error";
+  if (staleMinutes !== null && staleMinutes > 120) return "Error";
   return "Aktif";
 }
 
@@ -76,6 +99,12 @@ function formatLastUpdate(ts: number | null): string {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours} jam lalu`;
   return `${Math.floor(hours / 24)} hari lalu`;
+}
+
+function isMonitoringObject(obj: Record<string, unknown>): boolean {
+  return Object.keys(obj).some((key) =>
+    /^eartag_\d+$/i.test(key) || /^\d+$/.test(key) || /^S0*\d+$/i.test(key)
+  );
 }
 
 // 2. Core Parser: Normalisasi Data Firebase
@@ -92,90 +121,90 @@ export function normalizeDataSensor(
   const historyBuckets = new Map<string, TempHistoryPoint>();
 
   const rawObj = raw as Record<string, unknown>;
-  const monitoring = rawObj.monitoring;
+  const monitoring =
+    rawObj.monitoring && typeof rawObj.monitoring === "object" && !Array.isArray(rawObj.monitoring)
+      ? (rawObj.monitoring as Record<string, unknown>)
+      : isMonitoringObject(rawObj)
+      ? rawObj
+      : null;
 
-  if (monitoring && typeof monitoring === "object" && !Array.isArray(monitoring)) {
-    Object.entries(monitoring as Record<string, unknown>).forEach(([eartagKey, eartagValue]) => {
-      if (!eartagValue || typeof eartagValue !== "object") return;
-
-      const timestampsNode = eartagValue as Record<string, unknown>;
-      
-      const idSapiAngka = parseInt(eartagKey.replace(/\D/g, ""), 10) || 0;
-      const namaSapi = cattleNames.get(idSapiAngka) || `Sapi ${idSapiAngka}`;
-      const cowKey = idsapiToSensorKey(idSapiAngka); // Menghasilkan format "S001"
-
-      const snapshots = Object.entries(timestampsNode)
-        .map(([timeKey, nodeValue]) => {
-          if (!nodeValue || typeof nodeValue !== "object") return null;
-          const node = nodeValue as RawSensorNode;
-
-          const temperature = pickNumber(node, ["core_temperature", "temperature", "suhu", "temp"]);
-          const battery = pickNumber(node, ["battery_percent", "battery", "baterai", "batteryLevel"]);
-          
-          let parsedTs = null;
-          if (timeKey.includes("_")) {
-            const [datePart, timePart] = timeKey.split("_");
-            const formattedTime = timePart.replace(/-/g, ":"); // Menjadi "17:11:52"
-            parsedTs = Date.parse(`${datePart}T${formattedTime}`);
-          } else {
-            const ts = pickNumber(node, ["timestamp", "updatedAt", "time", "lastUpdate"]);
-            parsedTs = ts ?? Date.parse(timeKey.replace(/_/g, "-"));
-          }
-
-          return {
-            label: timeKey,
-            temperature: temperature ?? null,
-            battery: battery ?? null,
-            timestamp: Number.isNaN(parsedTs) ? null : parsedTs,
-          };
-        })
-        .filter((item): item is { label: string; temperature: number; battery: number | null; timestamp: number | null } => 
-          item !== null && item.temperature !== null
-        )
-        .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0));
-
-      if (snapshots.length > 0) {
-        const latest = snapshots[snapshots.length - 1];
-        
-        const staleMinutes = latest.timestamp 
-          ? Math.floor((Date.now() - latest.timestamp) / 60000) 
-          : 999;
-
-        sensors.push({
-          id: pickString(timestampsNode, ["id", "sensorId"]) ?? `SEN-${cowKey}`,
-          cattleId: cowKey,
-          cattleName: namaSapi,
-          battery: latest.battery !== null ? Math.max(0, Math.min(100, Math.round(latest.battery))) : 0,
-          temperature: parseFloat(latest.temperature.toFixed(2)),
-          location: `Kandang ${cowKey}`,
-          kandangKategori: "IoT",
-          status: deriveStatus(latest.battery ?? 0, latest.temperature, staleMinutes),
-          lastUpdate: formatLastUpdate(latest.timestamp),
-          timestamp: latest.timestamp ?? undefined,
-        });
-
-        for (const snapshot of snapshots) {
-          let graphLabel = snapshot.label;
-          if (snapshot.label.includes("_")) {
-            graphLabel = snapshot.label.split("_")[1].substring(0, 5).replace("-", ":");
-          }
-
-          if (!historyBuckets.has(graphLabel)) {
-            historyBuckets.set(graphLabel, { label: graphLabel });
-          }
-          historyBuckets.get(graphLabel)![cowKey] = parseFloat(snapshot.temperature.toFixed(2));
-        }
-      }
-    });
-
-    const tempHistory = Array.from(historyBuckets.values())
-      .sort((a, b) => String(a.label).localeCompare(String(b.label)))
-      .slice(-32);
-
-    return { sensors, tempHistory };
+  if (!monitoring) {
+    return { sensors: [], tempHistory: [] };
   }
 
-  return { sensors: [], tempHistory: [] };
+  Object.entries(monitoring).forEach(([eartagKey, eartagValue]) => {
+    if (!eartagValue || typeof eartagValue !== "object") return;
+
+    const timestampsNode = eartagValue as Record<string, unknown>;
+    const idSapiAngka = parseInt(eartagKey.replace(/\D/g, ""), 10) || 0;
+    const namaSapi = cattleNames.get(idSapiAngka) || `Sapi ${idSapiAngka}`;
+    const cowKey = idsapiToSensorKey(idSapiAngka);
+
+    const snapshots = Object.entries(timestampsNode)
+      .map(([timeKey, nodeValue]) => {
+        if (!nodeValue || typeof nodeValue !== "object") return null;
+        const node = nodeValue as RawSensorNode;
+
+        const temperature = pickNumber(node, ["core_temperature", "temperature", "suhu", "temp"]);
+        const battery = pickNumber(node, ["battery_percent", "battery", "baterai", "batteryLevel"]);
+        const timestamp = parseSnapshotTimestamp(timeKey, node);
+
+        return {
+          label: timeKey,
+          temperature: temperature ?? null,
+          battery: battery ?? null,
+          timestamp,
+        };
+      })
+      .filter(
+        (item): item is { label: string; temperature: number; battery: number | null; timestamp: number | null } =>
+          item !== null && item.temperature !== null
+      )
+      .sort((a, b) => {
+        if (a.timestamp !== null && b.timestamp !== null) return a.timestamp - b.timestamp;
+        if (a.timestamp !== null) return 1;
+        if (b.timestamp !== null) return -1;
+        return a.label.localeCompare(b.label);
+      });
+
+    if (snapshots.length === 0) return;
+
+    const latest = snapshots[snapshots.length - 1];
+    const staleMinutes = latest.timestamp !== null
+      ? Math.floor((Date.now() - latest.timestamp) / 60000)
+      : null;
+
+    sensors.push({
+      id: pickString(timestampsNode, ["id", "sensorId"]) ?? `SEN-${cowKey}`,
+      cattleId: cowKey,
+      cattleName: namaSapi,
+      battery: latest.battery !== null ? Math.max(0, Math.min(100, Math.round(latest.battery))) : 0,
+      temperature: parseFloat(latest.temperature.toFixed(2)),
+      location: pickString(timestampsNode, ["lokasi", "location", "posisi"]) || `Kandang ${cowKey}`,
+      kandangKategori: "IoT",
+      status: deriveStatus(latest.battery, latest.temperature, staleMinutes),
+      lastUpdate: formatLastUpdate(latest.timestamp),
+      timestamp: latest.timestamp ?? undefined,
+    });
+
+    for (const snapshot of snapshots) {
+      let graphLabel = snapshot.label;
+      if (snapshot.label.includes("_")) {
+        graphLabel = snapshot.label.split("_")[1].substring(0, 5).replace("-", ":");
+      }
+
+      if (!historyBuckets.has(graphLabel)) {
+        historyBuckets.set(graphLabel, { label: graphLabel });
+      }
+      historyBuckets.get(graphLabel)![cowKey] = parseFloat(snapshot.temperature.toFixed(2));
+    }
+  });
+
+  const tempHistory = Array.from(historyBuckets.values())
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)))
+    .slice(-32);
+
+  return { sensors, tempHistory };
 }
 // Jembatan URL & Fetching REST API
 

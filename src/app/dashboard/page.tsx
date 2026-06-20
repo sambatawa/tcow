@@ -201,7 +201,7 @@ export default function MainDashboard() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-stone-500 dark:text-stone-400">
-          Dashboard peternakan AdyatmaKom
+          Dashboard peternakan T-Cow°
         </p>
         <button
           onClick={handleExport}

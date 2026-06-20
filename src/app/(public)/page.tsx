@@ -44,7 +44,7 @@ const testimonials = [
     name: "Pak Hendra Wijaya",
     role: "Peternak — Lembang, Bandung",
     img:  IMG.farmerPort,
-    text: "Sejak pakai CowManager, kami bisa deteksi sapi sakit 2 hari lebih awal dari biasanya. Sensor suhu tubuhnya benar-benar mengubah cara kami beternak.",
+    text: "Sejak pakai T-Cow°, kami bisa deteksi sapi sakit 2 hari lebih awal dari biasanya. Sensor suhu tubuhnya benar-benar mengubah cara kami beternak.",
     stars: 5,
   },
   {
@@ -58,7 +58,7 @@ const testimonials = [
     name: "Pak Budi Santoso",
     role: "Peternak Skala Kecil — Boyolali",
     img:  IMG.farmer,
-    text: "CowManager membantu kami yang peternak kecil pun bisa punya sistem monitoring seperti peternakan besar. Simple dan mudah dipahami.",
+    text: "T-Cow° membantu kami yang peternak kecil pun bisa punya sistem monitoring seperti peternakan besar. Simple dan mudah dipahami.",
     stars: 5,
   },
 ];
@@ -108,7 +108,7 @@ export default function HomePage() {
                   href="/register"
                   className="landing-btn-primary group"
                 >
-                  Try CowManager
+                  Try T-Cow°
                   <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
                     <FaArrowRight className="w-4 h-4" />
                   </span>
@@ -179,13 +179,13 @@ export default function HomePage() {
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 border border-stone-200 dark:border-stone-700 rounded-full px-4 py-1 text-sm text-brand-forest font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-forest" />
-                About CowManager
+                About T-Cow°
               </div>
               <h2 className="mt-2 text-3xl lg:text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                 Jika Anda mengelola peternakan sapi — baik kandang koloni maupun individu — penting untuk memahami kondisi kesehatan setiap ekor secara real-time.
               </h2>
               <p className="text-stone-500 dark:text-stone-400 leading-relaxed">
-                CowManager menggabungkan sensor wearable IoT dengan platform manajemen digital untuk membantu peternak membuat keputusan berbasis data yang lebih baik.
+                T-Cow° menggabungkan sensor wearable IoT dengan platform manajemen digital untuk membantu peternak membuat keputusan berbasis data yang lebih baik.
               </p>
               <div className="flex items-start gap-4">
                 <div className="flex -space-x-2 shrink-0">
@@ -196,7 +196,7 @@ export default function HomePage() {
                   ))}
                 </div>
                 <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-                  <span className="font-semibold text-stone-700 dark:text-stone-300">CowManager</span> membantu kami boost produktivitas sekaligus menjaga kesehatan ternak. Ini mengubah cara kami beternak.
+                  <span className="font-semibold text-stone-700 dark:text-stone-300">T-Cow°</span> membantu kami boost produktivitas sekaligus menjaga kesehatan ternak. Ini mengubah cara kami beternak.
                 </p>
               </div>
             </div>
@@ -410,7 +410,7 @@ export default function HomePage() {
                 What Farmers<br />Are Saying
               </h2>
               <p className="mt-4 text-stone-500 dark:text-stone-400 leading-relaxed max-w-sm">
-                Dengarkan langsung dari peternak yang sudah merasakan manfaat nyata dari sistem monitoring CowManager.
+                Dengarkan langsung dari peternak yang sudah merasakan manfaat nyata dari sistem monitoring T-Cow°.
               </p>
               <div className="flex gap-3 mt-8">
                 <button
@@ -495,7 +495,7 @@ export default function HomePage() {
             Daftarkan Farm Anda dan Mulai Pantau Kesehatan Sapi
           </h2>
           <p className="mt-4 text-brand-cream/80 max-w-xl mx-auto leading-relaxed">
-            Bergabung dengan ribuan peternak yang telah mempercayai CowManager untuk meningkatkan produktivitas dan kesehatan ternak mereka.
+            Bergabung dengan ribuan peternak yang telah mempercayai T-Cow° untuk meningkatkan produktivitas dan kesehatan ternak mereka.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link

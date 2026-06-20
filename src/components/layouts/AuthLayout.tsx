@@ -5,6 +5,7 @@ import { FaLeaf, FaMoon, FaSun } from "react-icons/fa";
 import { useTheme } from "@/context/ThemeContext";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { TCowLogo } from "@/components/ui/TCowLogo";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -28,9 +29,9 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <div className="w-full max-w-[420px] relative space-y-10 z-10">
           <div className="flex items-center gap-3 justify-center">
             <div className="w-9 h-9 bg-brand-accent rounded-full flex items-center justify-center shrink-0">
-              <FaLeaf className="w-5 h-5 text-brand-forest" />
+              <TCowLogo className="w-5 h-5" />
             </div>
-            <span className="font-semibold text-brand-forest dark:text-brand-cream text-lg">AdyatmaKom</span>
+            <span className="font-semibold text-brand-forest dark:text-brand-cream text-lg">T-Cow°</span>
           </div>
           {children}
         </div>
@@ -43,9 +44,9 @@ export function AuthLayout({ children }: AuthLayoutProps) {
             <div className="relative justify-between flex">
               <div className="flex items-center gap-3 group">
                 <div className="w-11 h-11 rounded-full bg-brand-accent flex items-center justify-center shadow-lg shadow-brand-forest/20 group-hover:bg-brand-accent/90 transition-colors">
-                  <FaLeaf className="w-6 h-6 text-brand-forest" />
+                  <TCowLogo className="w-6 h-6" />
                 </div>
-                <span className="text-xl font-semibold tracking-tight">AdyatmaKom</span>
+                <span className="text-xl font-semibold tracking-tight">T-Cow°</span>
               </div>
               <div className="absolute right-5 sm:right-6 z-50">
                 <button className="p-2.5 rounded-xl text-brand-forest/70 hover:text-brand-forest dark:text-brand-cream/70 dark:hover:text-brand-cream hover:bg-brand-forest/5 dark:hover:bg-brand-cream/10 transition-colors bg-white/20 dark:bg-black/20 backdrop-blur-sm shadow-sm" type="button" onClick={toggleTheme} aria-label="Ganti tema">
@@ -85,7 +86,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
               </dl>
             </div>
             <div className="relative text-brand-cream/55 text-xs">
-              © AdyatmaKom - Website kolaborasi TEKOM dan TNK
+              © T-Cow° - Website kolaborasi TEKOM dan TNK
             </div>
           </div>
           <div className="flex-1 h-full flex items-center justify-center p-10 bg-brand-cream/50 dark:bg-[#12180e]">

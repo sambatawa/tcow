@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FaLeaf, FaWrench, FaUsers, FaBell, FaMoon, FaSun, FaSignOutAlt, FaChevronRight, FaChevronDown, FaCog, FaExclamationTriangle, FaExclamationCircle, FaCheckCircle, FaInfoCircle, FaBook, FaCamera } from "react-icons/fa";
+import { FaWrench, FaUsers, FaBell, FaMoon, FaSun, FaSignOutAlt, FaChevronRight, FaChevronDown, FaCog, FaExclamationTriangle, FaExclamationCircle, FaCheckCircle, FaInfoCircle, FaBook, FaCamera } from "react-icons/fa";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlineMonitorHeart } from "react-icons/md";
 import { GiCow } from "react-icons/gi";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import { TCowLogo } from "@/components/ui/TCowLogo";
 import type { DashboardAlert } from "@/lib/dashboard";
 import { toast } from "sonner";
 import { RealtimeClock } from "@/components/ui/RealtimeClock";
@@ -205,10 +206,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <div className="p-8 rounded-t-full flex items-center justify-center border-t-4 border-[#e5d7c4]/20 dark:border-[#354024]/30">
           <div className="flex flex-col items-center gap-7 text-center">
             <div className="w-12 h-12 bg-[#55cd1986] rounded-full shadow-xl border-b-2 flex items-center justify-center">
-              <FaLeaf className="w-8 h-8 text-white" />
+              <TCowLogo className="w-8 h-8" />
             </div>
             <div className="text-[#354024] dark:text-[#54cd19] font-semibold text-md leading-tight">
-              AdyatmaKom
+              T-Cow°
             </div>
           </div>
         </div>
@@ -220,10 +221,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div className="lg:hidden py-4 border-t border-[#e5d7c4]/20 dark:border-[#354024]/30">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 border-r-2 border-[#55cd1986] rounded-t-full shadow-md flex items-center justify-center">
-                  <FaLeaf className="w-4 h-4 text-white light:text-black" />
+                  <TCowLogo className="w-4 h-4" />
                 </div>
                 <div className=" text-[#354024] dark:text-[#54cd19] font-semibold text-sm leading-tight">
-                  AdyatmaKom
+                  T-Cow°
                 </div>
               </div>
             </div>

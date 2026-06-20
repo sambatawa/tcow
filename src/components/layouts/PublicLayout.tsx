@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaBars, FaTimes, FaLeaf, FaMoon, FaSun, FaChevronRight } from "react-icons/fa";
+import { FaBars, FaTimes, FaMoon, FaSun, FaChevronRight } from "react-icons/fa";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
+import { TCowLogo } from "@/components/ui/TCowLogo";
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,10 +51,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center">
               <Link href="/" className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${transparent ? "bg-brand-accent" : "bg-brand-forest"}`}>
-                  <FaLeaf className="w-4 h-4 text-white" />
+                  <TCowLogo className="w-5 h-5" />
                 </div>
                 <span className={`font-extrabold text-base tracking-tight transition-colors ${logoText}`}>
-                  AdyatmaKom
+                  T-Cow°
                 </span>
               </Link>
             </div>
@@ -152,9 +153,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <div className="md:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center">
-                  <FaLeaf className="w-4 h-4 text-brand-forest" />
+                  <TCowLogo className="w-4 h-4" />
                 </div>
-                <span className="text-white font-extrabold text-lg tracking-tight">CowManager</span>
+                <span className="text-white font-extrabold text-lg tracking-tight">T-Cow°</span>
               </div>
               <p className="text-stone-400 text-sm leading-relaxed max-w-xs">
                 Platform monitoring kesehatan sapi modern berbasis sensor IoT wearable — suhu tubuh, rekam medis, vaksinasi, semua dalam satu dasbor.
@@ -203,7 +204,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="pt-6 border-t border-stone-700/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
-            <p>© 2025 CowManager — Smart Cattle Health Monitoring System. Hak cipta dilindungi.</p>
+            <p>© 2025 T-Cow° — Smart Cattle Health Monitoring System. Hak cipta dilindungi.</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-stone-300 transition-colors">Privasi</a>
               <a href="#" className="hover:text-stone-300 transition-colors">Syarat</a>

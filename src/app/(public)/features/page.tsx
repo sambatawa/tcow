@@ -144,7 +144,7 @@ export default function FeaturesPage() {
             <div>
               <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Modul Utama</span>
               <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                4 Modul Inti<br />CowManager
+                4 Modul Inti<br />T-Cow°
               </h2>
             </div>
             <p className="text-stone-500 dark:text-stone-400 text-sm max-w-xs leading-relaxed">
@@ -241,7 +241,7 @@ export default function FeaturesPage() {
             <span className="text-brand-sage dark:text-brand-accent text-sm font-medium uppercase tracking-widest">Fitur Tambahan</span>
             <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Dan Masih Banyak Lagi</h2>
             <p className="mt-3 text-stone-500 dark:text-stone-400 max-w-lg mx-auto">
-              CowManager terus berkembang dengan fitur-fitur baru yang memudahkan pengelolaan peternakan sapi sehari-hari.
+              T-Cow° terus berkembang dengan fitur-fitur baru yang memudahkan pengelolaan peternakan sapi sehari-hari.
             </p>
           </div>
 
@@ -275,10 +275,10 @@ export default function FeaturesPage() {
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <span className="landing-eyebrow-on-dark">Transformasi Digital</span>
           <h2 className="mt-3 text-4xl font-bold text-white leading-tight">
-            Siap Memanfaatkan Semua Fitur CowManager?
+            Siap Memanfaatkan Semua Fitur T-Cow°?
           </h2>
           <p className="mt-4 text-brand-cream/80 leading-relaxed max-w-xl mx-auto">
-            Mulai pantau kesehatan sapi Anda hari ini. Daftar gratis dan coba semua fitur platform CowManager.
+            Mulai pantau kesehatan sapi Anda hari ini. Daftar gratis dan coba semua fitur platform T-Cow°.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link

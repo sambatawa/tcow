@@ -167,7 +167,7 @@ export default function CattleListPage() {
             Manajemen Sapi
           </h1>
           <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-            Mengelola data setiap sapi yang ada dalam peternakan Adyatma Farm.
+            Mengelola data setiap sapi yang ada dalam peternakan T-Cow°.
           </p>
         </div>
 

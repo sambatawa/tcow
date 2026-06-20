@@ -60,10 +60,10 @@ export default function AboutPage() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-4 py-1.5 text-sm text-brand-sage mb-4">
             <FaLeaf className="w-3.5 h-3.5" />
-            Tentang CowManager
+            Tentang T-Cow°
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight uppercase tracking-tight">
-            About <span className="text-brand-accent">CowManager</span>
+            About <span className="text-brand-accent">T-Cow°</span>
           </h1>
           <p className="mt-4 text-stone-300 max-w-xl leading-relaxed">
             Platform monitoring kesehatan sapi berbasis sensor IoT wearable — dibangun untuk peternak modern yang percaya pada data.
@@ -84,7 +84,7 @@ export default function AboutPage() {
                 Smart Farming untuk Masa Depan Peternakan Indonesia
               </h2>
               <p className="text-stone-500 dark:text-stone-400 leading-relaxed">
-                CowManager lahir dari kebutuhan nyata para peternak sapi modern yang ingin mengelola ternak dengan lebih ilmiah. Kami mengintegrasikan sensor wearable IoT, analisis data real-time, dan machine learning ke dalam satu platform yang mudah digunakan.
+                T-Cow° lahir dari kebutuhan nyata para peternak sapi modern yang ingin mengelola ternak dengan lebih ilmiah. Kami mengintegrasikan sensor wearable IoT, analisis data real-time, dan machine learning ke dalam satu platform yang mudah digunakan.
               </p>
               <p className="text-stone-500 dark:text-stone-400 leading-relaxed">
                 Sensor collar dan ear-tag kami merekam suhu tubuh sapi setiap saat. Data ini tidak hanya membantu deteksi dini penyakit, tetapi juga menjadi dataset berharga untuk melatih model prediksi kesehatan berbasis machine learning.
@@ -145,7 +145,7 @@ export default function AboutPage() {
             <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Tujuan Kami</span>
             <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Apa yang Ingin Kami Capai</h2>
             <p className="mt-3 text-stone-500 dark:text-stone-400 max-w-lg mx-auto">
-              Setiap fitur CowManager dirancang dengan tujuan spesifik untuk meningkatkan kesehatan ternak dan efisiensi peternakan.
+              Setiap fitur T-Cow° dirancang dengan tujuan spesifik untuk meningkatkan kesehatan ternak dan efisiensi peternakan.
             </p>
           </div>
 
@@ -177,14 +177,14 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <img src={IMG_TEAM} alt="Tim CowManager" className="w-full h-80 object-cover rounded-2xl shadow-xl" />
+              <img src={IMG_TEAM} alt="Tim T-Cow°" className="w-full h-80 object-cover rounded-2xl shadow-xl" />
             </div>
 
             <div className="space-y-8">
               <div>
                 <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Tim Kami</span>
                 <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                  Orang-orang di Balik CowManager
+                  Orang-orang di Balik T-Cow°
                 </h2>
                 <p className="mt-4 text-stone-500 dark:text-stone-400 leading-relaxed">
                   Kami adalah tim lintas disiplin yang menggabungkan keahlian peternakan, rekayasa IoT, analisis data, dan pengembangan software.
@@ -224,7 +224,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <span className="landing-eyebrow-on-dark">Mulai Sekarang</span>
           <h2 className="mt-3 text-4xl font-bold text-white">
-            Tertarik Menggunakan CowManager?
+            Tertarik Menggunakan T-Cow°?
           </h2>
           <p className="mt-4 text-brand-cream/80 max-w-xl mx-auto leading-relaxed">
             Daftarkan farm Anda dan mulai pantau kesehatan sapi dengan teknologi IoT wearable terkini. Gratis untuk memulai.

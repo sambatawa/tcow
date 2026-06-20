@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findCattleByParam } from "@/lib/sapi-service";
-import { getSensorDataByEartag } from "@/lib/firebase-rtdb";
+import { fetchDataSensorFromRtdb } from "@/lib/firebase-rtdb";
 import prisma from "@/lib/prisma";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -15,16 +15,10 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const cattleId = cattle.id;
     
-    // Fetch sensor data from Firebase if eartag exists
+    // Fetch sensor data from Firebase
     let sensorData = null;
     try {
-      const sapiData = await prisma.sapi.findUnique({
-        where: { idsapi: cattle.idsapi },
-      });
-      
-      if (sapiData?.nomor_eartag) {
-        sensorData = await getSensorDataByEartag(sapiData.nomor_eartag);
-      }
+      sensorData = await fetchDataSensorFromRtdb();
     } catch (error) {
       console.error("Error fetching sensor data:", error);
       // Continue without sensor data
