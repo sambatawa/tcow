@@ -33,6 +33,20 @@ export type TempHistoryPoint = {
   [cowKey: string]: string | number;
 };
 
+export type CattleSensorReading = {
+  core_temperature: number;
+  ear_temperature: number;
+  battery_percent: number;
+  battery_status: string;
+  health_status: string;
+  timestamp: string;
+};
+
+export type CattleSensorData = {
+  latestReading: CattleSensorReading;
+  historicalReadings: CattleSensorReading[];
+};
+
 type RawSensorNode = Record<string, unknown>;
 
 function pickNumber(obj: RawSensorNode, keys: string[]): number | null {

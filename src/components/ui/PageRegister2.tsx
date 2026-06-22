@@ -89,7 +89,7 @@ export default function PageRegister2({ onBack, onSubmit, loading, farmCode }: P
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <div className={`${glassBlock} ${errors.password ? "border-red-300/70 dark:border-red-500/40" : ""}`}>
               <label className={lbl} htmlFor="reg-pass">Password</label>

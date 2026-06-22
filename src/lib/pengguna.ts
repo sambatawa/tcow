@@ -1,6 +1,8 @@
 import type { pengguna } from "@prisma/client";
 
 export type AppRole = "Peternak" | "Teknisi";
+export type Role = pengguna["role"];
+export type Pengguna = pengguna;
 
 export type PenggunaPublic = {
   uid: string;

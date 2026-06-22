@@ -18,34 +18,33 @@ const goals = [
   {
     icon: FaBullseye,
     title: "Deteksi Dini Penyakit",
-    desc: "Memantau suhu tubuh sapi secara kontinu untuk mendeteksi anomali sebelum gejala klinis muncul.",
-    color: "bg-brand-forest/10 dark:bg-brand-forest/20 text-brand-forest dark:text-brand-forest",
+    desc: "Memantau suhu tubuh sapi secara real-time untuk mendeteksi penyakit muncul.",
+    accent: "bg-brand-forest/10 text-brand-forest",
   },
   {
     icon: FaBrain,
     title: "Machine Learning Ready",
     desc: "Data suhu 7 hari disiapkan sebagai dataset terstruktur untuk melatih model prediksi kesehatan.",
-    color: "bg-brand-sage-soft dark:bg-brand-forest/30 text-brand-sage dark:text-brand-cream",
+    accent: "bg-brand-sage/10 text-brand-sage",
   },
   {
     icon: FaGlobe,
     title: "Pertanian Berkelanjutan",
     desc: "Mendukung praktik peternakan ramah lingkungan melalui manajemen sumber daya yang efisien.",
-    color: "bg-brand-tan-soft dark:bg-brand-forest/30 text-brand-forest dark:text-brand-tan",
+    accent: "bg-brand-tan/10 text-brand-tan",
   },
   {
     icon: FaLightbulb,
     title: "Inovasi Teknologi",
-    desc: "Mengintegrasikan IoT, analitik data, dan AI untuk transformasi digital sektor peternakan.",
-    color: "bg-brand-forest/10 dark:bg-brand-forest/20 text-brand-forest dark:text-brand-forest",
-  },
+    desc: "Mengintegrasikan IoT, analitik data, dan ML untuk transformasi digital sektor peternakan.",
+    accent: "bg-brand-accent/10 text-brand-accent",
+  },  
 ];
 
 const team = [
-  { name: "Dr. Ahmad Fauzi", role: "Ahli Peternakan Sapi",  initials: "AF", color: "from-brand-forest to-teal-600" },
-  { name: "Rizki Pratama",   role: "IoT Engineer",           initials: "RP", color: "from-blue-500 to-indigo-600" },
-  { name: "Sari Dewi",       role: "Data Analyst & ML",      initials: "SD", color: "from-violet-500 to-purple-600" },
-  { name: "Budi Santoso",    role: "Full-stack Developer",   initials: "BS", color: "from-amber-500 to-orange-600" },
+  { name: "Seluruh Anggota X(6X+2Y)", role: "IoT Engineer, Web Developer, Data Analyst & ML",  initials: "01", color: "from-brand-forest to-teal-600" },
+  { name: "Program Studi Teknologi Manajemen Ternak",   role: "Ahli Peternakan Sapi",           initials: "02", color: "from-blue-500 to-indigo-600" },
+  { name: "Faldiena Marcelita, S.T., M.Kom. & Shelvie Nidya Neyman, S.Kom, M.Si.",       role: "Dosen Pembimbing",      initials: "03", color: "from-violet-500 to-purple-600" },
 ];
 
 /* ════════════════════════════════════════════════════════════ */
@@ -66,7 +65,7 @@ export default function AboutPage() {
             About <span className="text-brand-accent">T-Cow°</span>
           </h1>
           <p className="mt-4 text-stone-300 max-w-xl leading-relaxed">
-            Platform monitoring kesehatan sapi berbasis sensor IoT wearable — dibangun untuk peternak modern yang percaya pada data.
+            T-Cow° menggabungkan sensor wearable IoT dengan Website Monitoring untuk membantu peternak membuat keputusan berbasis data dan Machine Learing yang lebih baik.
           </p>
         </div>
       </section>
@@ -81,13 +80,13 @@ export default function AboutPage() {
                 Misi &amp; Visi
               </div>
               <h2 className="text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                Smart Farming untuk Masa Depan Peternakan Indonesia
+                Inovasi untuk Masa Depan Peternakan Indonesia
               </h2>
               <p className="text-stone-500 dark:text-stone-400 leading-relaxed">
-                T-Cow° lahir dari kebutuhan nyata para peternak sapi modern yang ingin mengelola ternak dengan lebih ilmiah. Kami mengintegrasikan sensor wearable IoT, analisis data real-time, dan machine learning ke dalam satu platform yang mudah digunakan.
+                T-Cow° lahir dari kebutuhan nyata peternak sapi di Kandang Mitra kami yaitu Program Studi Teknologi Manajemen Ternak yang ingin memantau Kesehatan sapi secara real-time. Kami mengintegrasikan sensor wearable IoT, analisis data real-time, dan machine learning ke dalam Website Monitoring yang mudah digunakan.
               </p>
               <p className="text-stone-500 dark:text-stone-400 leading-relaxed">
-                Sensor collar dan ear-tag kami merekam suhu tubuh sapi setiap saat. Data ini tidak hanya membantu deteksi dini penyakit, tetapi juga menjadi dataset berharga untuk melatih model prediksi kesehatan berbasis machine learning.
+                Ear-tag kami merekam suhu tubuh sapi setiap saat. Data ini tidak hanya membantu deteksi dini penyakit, tetapi juga menjadi dataset berharga untuk melatih model prediksi kesehatan berbasis machine learning.
               </p>
               <div className="space-y-3">
                 {[
@@ -124,10 +123,10 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center text-white">
             {[
-              { val: "2022",  label: "Tahun Berdiri" },
-              { val: "50+",   label: "Farm Aktif" },
-              { val: "500+",  label: "Sapi Terpantau" },
-              { val: "99.9%", label: "Uptime Sistem" },
+              { val: "2026",  label: "Tahun Berdiri" },
+              { val: "1+",   label: "Kandang Aktif" },
+              { val: "10+",  label: "Sapi Terpantau" },
+              { val: "99.9%", label: "Data Real-time" },
             ].map((s) => (
               <div key={s.label}>
                 <p className="text-4xl font-extrabold">{s.val}</p>
@@ -143,29 +142,23 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-14">
             <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Tujuan Kami</span>
-            <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Apa yang Ingin Kami Capai</h2>
+            <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Apa yang Ingin Kami Capai?</h2>
             <p className="mt-3 text-stone-500 dark:text-stone-400 max-w-lg mx-auto">
-              Setiap fitur T-Cow° dirancang dengan tujuan spesifik untuk meningkatkan kesehatan ternak dan efisiensi peternakan.
+              Setiap fitur T-Cow° dirancang dengan tujuan spesifik untuk meningkatkan kesehatan ternak serta efisiensi dan inovasi teknologi di bidang peternakan.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {goals.map((g, i) => (
+            {goals.map((g) => (
               <div
                 key={g.title}
-                className={`group p-6 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-lg cursor-default ${
-                  i === 0
-                    ? "bg-brand-forest border-brand-forest"
-                    : "bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700 hover:border-brand-forest dark:hover:border-brand-forest"
-                }`}
+                className="group p-6 rounded-2xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 transition-all hover:-translate-y-1 hover:shadow-xl cursor-default"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${
-                  i === 0 ? "bg-brand-forest" : g.color.split(" ")[0] + " " + g.color.split(" ")[1]
-                }`}>
-                  <g.icon className={`w-6 h-6 ${i === 0 ? "text-white" : g.color.split(" ").slice(2).join(" ")}`} />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${g.accent} ring-1 ring-current/10`}> 
+                  <g.icon className="w-6 h-6" />
                 </div>
-                <h3 className={`font-bold mb-2 ${i === 0 ? "text-white" : "text-stone-800 dark:text-stone-200"}`}>{g.title}</h3>
-                <p className={`text-sm leading-relaxed ${i === 0 ? "text-brand-cream/80" : g.color.split(" ").slice(2).join(" ")}`}>{g.desc}</p>
+                <h3 className="font-bold mb-2 text-stone-900 dark:text-stone-100">{g.title}</h3>
+                <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300">{g.desc}</p>
               </div>
             ))}
           </div>
@@ -184,10 +177,10 @@ export default function AboutPage() {
               <div>
                 <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Tim Kami</span>
                 <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                  Orang-orang di Balik T-Cow°
+                  Mari Mengenal Orang-orang Hebat di Balik T-Cow°
                 </h2>
-                <p className="mt-4 text-stone-500 dark:text-stone-400 leading-relaxed">
-                  Kami adalah tim lintas disiplin yang menggabungkan keahlian peternakan, rekayasa IoT, analisis data, dan pengembangan software.
+                <p className="mt-4 text-stone-500 dark:text-stone-400 leading-relaxed text-justify">
+                  Kami adalah tim lintas Program Studi antara Teknologi Rekayasa Komputer dan Teknologi Manajemen Ternak. Perpaduan yang menggabungkan keahlian Rekayasa IoT, Analisis data, Machine learning, Pengembangan Website, dan Peternakan Sapi.
                 </p>
               </div>
 
@@ -202,7 +195,7 @@ export default function AboutPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-stone-800 dark:text-stone-200 text-sm">{m.name}</p>
-                      <p className="text-stone-400 text-xs">{m.role}</p>
+                <p className="text-stone-400 text-xs text-justify">{m.role}</p>
                     </div>
                   </div>
                 ))}
@@ -227,7 +220,7 @@ export default function AboutPage() {
             Tertarik Menggunakan T-Cow°?
           </h2>
           <p className="mt-4 text-brand-cream/80 max-w-xl mx-auto leading-relaxed">
-            Daftarkan farm Anda dan mulai pantau kesehatan sapi dengan teknologi IoT wearable terkini. Gratis untuk memulai.
+            Gunakan T-Cow° untuk meningkatkan produktivitas dan kesehatan ternak Anda.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
@@ -244,7 +237,7 @@ export default function AboutPage() {
             </Link>
           </div>
           <div className="mt-8 flex flex-wrap justify-center gap-5 text-brand-cream/80 text-sm">
-            {["Tanpa biaya setup", "Data aman & privat", "Dukungan teknis", "Update rutin"].map((item) => (
+            {["Tanpa biaya setup", "Data aman", "Mudah digunakan", "Dukungan 24/7"].map((item) => (
               <div key={item} className="flex items-center gap-2">
                 <FaCheckCircle className="w-4 h-4 text-brand-accent shrink-0" />
                 <span>{item}</span>

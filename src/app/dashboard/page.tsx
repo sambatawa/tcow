@@ -214,7 +214,7 @@ export default function MainDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Sapi Aktif"
+          title="Total Sapi"
           value={`${stats.totalSapi} Ekor`}
           sub={`${stats.healthy} sehat · ${stats.sick} sakit · ${stats.dead} mati`}
           icon={GiCow}

@@ -10,7 +10,6 @@ import {
 import type {
   CattleListItem,
   MedicalRecord,
-  VaccinationRecord,
   CattleActivity,
 } from "@/lib/sapi";
 import type { CattleSensorData } from "@/lib/firebase-rtdb";
@@ -37,16 +36,14 @@ export default function CattleProfilePage() {
   
   const [cattle, setCattle] = useState<Cattle | null>(null);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
-  const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>([]);
   const [activities, setActivities] = useState<CattleActivity[]>([]);
   const [sensorData, setSensorData] = useState<CattleSensorData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'medical' | 'vaccination' | 'activity'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'medical' | 'activity'>('overview');
 
   const tabs = [
     { key: 'overview', label: 'Ringkasan' },
     { key: 'medical', label: 'Riwayat Medis' },
-    { key: 'vaccination', label: 'Vaksinasi' },
     { key: 'activity', label: 'Aktivitas' },
   ] as const;
 
@@ -56,7 +53,6 @@ export default function CattleProfilePage() {
     return res.json() as Promise<{
       cattle: Cattle;
       medicalHistory: MedicalRecord[];
-      vaccinationData: VaccinationRecord[];
       cattleActivityLog: CattleActivity[];
       sensorData: CattleSensorData | null;
     }>;
@@ -72,7 +68,6 @@ export default function CattleProfilePage() {
         setCattle(detail.cattle);
         setSensorData(detail.sensorData);
         setMedicalRecords(detail.medicalHistory);
-        setVaccinations(detail.vaccinationData);
         setActivities(detail.cattleActivityLog);
       } catch {
         if (!cancelled) setCattle(null);
@@ -331,67 +326,6 @@ export default function CattleProfilePage() {
                   </span>
                 </div>
               ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'vaccination' && (
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 p-6">
-          <h3 className="font-semibold text-stone-800 dark:text-stone-200 mb-4">Status Vaksinasi</h3>
-          <div className="space-y-3">
-            {vaccinations.length === 0 ? (
-              <p className="text-center text-stone-400 py-8">Belum ada data vaksinasi untuk sapi ini</p>
-            ) : (
-              vaccinations.map((vaccine) => {
-                const isOverdue = vaccine.status === "Terlambat";
-                const isUpcoming = vaccine.status === "Terjadwal";
-                return (
-                  <div key={vaccine.id} className={"p-4 rounded-lg border " + (
-                    isOverdue
-                      ? "border-red-200 dark:border-red-800"
-                      : isUpcoming
-                      ? "border-amber-200 dark:border-amber-800"
-                      : "border-stone-100 dark:border-stone-800"
-                  )}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-stone-800 dark:text-stone-200 text-sm">{vaccine.vaccine}</p>
-                        <p className="text-xs text-stone-400">{vaccine.batch}</p>
-                      </div>
-                      <span className={"text-xs px-2 py-0.5 rounded-full font-medium " + (
-                        vaccine.status === "Selesai"
-                          ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                          : isOverdue
-                          ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                          : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
-                      )}>
-                        {vaccine.status}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <p className="text-stone-400">Tanggal</p>
-                        <p className="font-medium text-stone-700 dark:text-stone-300">{vaccine.date}</p>
-                      </div>
-                      <div>
-                        <p className="text-stone-400">Berikutnya</p>
-                        <p className="font-medium text-stone-700 dark:text-stone-300">{vaccine.nextDue}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <p className="text-stone-400">Petugas</p>
-                        <p className="font-medium text-stone-700 dark:text-stone-300">{vaccine.vet}</p>
-                      </div>
-                      <div>
-                        <p className="text-stone-400">Catatan</p>
-                        <p className="font-medium text-stone-700 dark:text-stone-300">{vaccine.batch || "—"}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
             )}
           </div>
         </div>

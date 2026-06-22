@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FaBars, FaTimes, FaMoon, FaSun, FaChevronRight } from "react-icons/fa";
@@ -9,48 +9,35 @@ import { TCowLogo } from "@/components/ui/TCowLogo";
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { isDark, toggleTheme } = useTheme();
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
 
   const isHome = pathname === "/";
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!isHome) setScrolled(true);
-  }, [isHome]);
-
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
-    { href: "/features", label: "Fitur" },
+    { href: "/features", label: "Features" },
   ];
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
-  const transparent = isHome && !scrolled;
-  const logoText = transparent ? "text-white" : "text-brand-forest dark:text-brand-accent";
-  const linkBase = transparent ? "text-white/90 hover:text-white" : "text-brand-forest/80 dark:text-brand-cream/80 hover:text-brand-sage dark:hover:text-brand-accent";
-  const linkActive = transparent ? "text-white font-semibold" : "text-brand-sage dark:text-brand-accent font-semibold";
-  const iconBtn = transparent ? "text-white/90 hover:text-white hover:bg-white/10" : "text-stone-600 hover:text-stone-900 dark:text-stone-200 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800";
-  const mobileBtn = transparent ? "text-white hover:bg-white/10" : "text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800";
+  const logoText = "text-brand-forest dark:text-brand-accent";
+  const linkBase = "text-brand-forest/75 dark:text-brand-cream/75 hover:text-brand-forest dark:hover:text-brand-accent hover:bg-brand-forest/5 dark:hover:bg-brand-accent/10";
+  const linkActive = "bg-brand-forest text-white dark:bg-brand-accent dark:text-brand-forest shadow-sm font-semibold";
+  const iconBtn = "text-brand-forest/75 hover:text-brand-forest dark:text-brand-cream/75 dark:hover:text-brand-accent hover:bg-brand-forest/5 dark:hover:bg-brand-accent/10";
+  const mobileBtn = "text-brand-forest/75 hover:text-brand-forest dark:text-brand-cream/75 dark:hover:text-brand-accent hover:bg-brand-forest/5 dark:hover:bg-brand-accent/10";
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-cream/40 dark:bg-[#1a2114]">
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 bg-transparent border-transparent">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-brand-forest/10 dark:border-brand-accent/15 bg-white/85 dark:bg-[#1a2114]/90 backdrop-blur-xl shadow-sm transition-colors duration-300">
         <div className="max-w-9xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between h-16">
 
             <div className="flex items-center">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${transparent ? "bg-brand-accent" : "bg-brand-forest"}`}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-brand-forest dark:bg-brand-accent transition-colors">
                   <TCowLogo className="w-5 h-5" />
                 </div>
                 <span className={`font-extrabold text-base tracking-tight transition-colors ${logoText}`}>
@@ -59,12 +46,12 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
 
-            <div className="hidden md:flex items-center gap-8 backdrop-blur-sm bg-white/20 px-10 py-2 rounded-full shadow-md">
+            <div className="hidden md:flex items-center gap-1 rounded-full border border-brand-forest/10 dark:border-brand-accent/15 bg-brand-cream/80 dark:bg-brand-forest/25 px-1.5 py-1.5 shadow-sm">
               {navLinks.map((link, i) => (
                 <Link
                   key={`${link.href}-${i}`}
                   href={link.href}
-                  className={`text-sm transition-colors ${isActive(link.href) ? linkActive : linkBase}`}
+                  className={`rounded-full px-4 py-1.5 text-sm transition-colors ${isActive(link.href) ? linkActive : linkBase}`}
                 >
                   {link.label}
                 </Link>
@@ -111,7 +98,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
           {/* Mobile menu */}
           {mobileOpen && (
-            <div className="md:hidden bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 py-4 space-y-1">
+            <div className="md:hidden mt-2 rounded-2xl border border-brand-forest/10 dark:border-brand-accent/15 bg-white/95 dark:bg-[#1a2114]/95 p-3 shadow-lg space-y-1">
               {navLinks.map((link, i) => (
                 <Link
                   key={`mob-${link.href}-${i}`}
@@ -119,15 +106,15 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   onClick={() => setMobileOpen(false)}
                   className={`block px-4 py-2.5 rounded-xl text-sm transition-colors ${
                     isActive(link.href)
-                      ? "bg-brand-accent-soft dark:bg-brand-forest/40 text-brand-forest dark:text-brand-accent font-semibold"
-                      : "text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800"
+                      ? "bg-brand-forest text-white dark:bg-brand-accent dark:text-brand-forest font-semibold"
+                      : "text-brand-forest/75 dark:text-brand-cream/75 hover:bg-brand-forest/5 dark:hover:bg-brand-accent/10"
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
               <div className="pt-2 px-4 flex flex-col gap-2">
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="text-center py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm text-stone-600 dark:text-stone-400">
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="text-center py-2.5 rounded-xl border border-brand-forest/15 dark:border-brand-accent/20 text-sm text-brand-forest/75 dark:text-brand-cream/75">
                   Masuk
                 </Link>
                 <Link href="/register" onClick={() => setMobileOpen(false)} className="text-center py-2.5 rounded-xl bg-brand-accent text-brand-forest text-sm font-semibold">
@@ -158,19 +145,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 <span className="text-white font-extrabold text-lg tracking-tight">T-Cow°</span>
               </div>
               <p className="text-stone-400 text-sm leading-relaxed max-w-xs">
-                Platform monitoring kesehatan sapi modern berbasis sensor IoT wearable — suhu tubuh, rekam medis, vaksinasi, semua dalam satu dasbor.
+                Platform monitoring kesehatan sapi modern Smart Eartag berbasis Internet of Things (IoT) dan machine learning yang dirancang untuk memantau suhu tubuh sapi secara real-time. 
               </p>
-              <div className="flex gap-3 mt-5">
-                {["F", "T", "I", "Y"].map((s) => (
-                  <a
-                    key={s}
-                    href="#"
-                    className="w-8 h-8 rounded-full bg-brand-sage/40 hover:bg-brand-accent flex items-center justify-center transition-colors text-xs font-bold text-brand-cream"
-                  >
-                    {s}
-                  </a>
-                ))}
-              </div>
             </div>
 
             {/* Navigasi */}
@@ -195,16 +171,16 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm">Kontak</h4>
               <ul className="space-y-2.5 text-sm text-stone-400">
-                <li className="flex items-start gap-2"><span>📍</span><span>Jl. Raya Peternakan No. 42, Bandung</span></li>
-                <li className="flex items-center gap-2"><span>📞</span><span>(022) 123-4567</span></li>
-                <li className="flex items-center gap-2"><span>✉️</span><span>info@cowmanager.id</span></li>
+                <li className="flex items-start gap-2"><span>📍</span><span>Jl. Kumbang No.14, RT.02/RW.06, Babakan, Kecamatan Bogor Tengah, Kota Bogor, Jawa Barat 16128</span></li>
+                <li className="flex items-center gap-2"><span>📞</span><span>(0251) 8329101</span></li>
+                <li className="flex items-center gap-2"><span>✉️</span><span>@peternakanvokasiipb</span></li>
                 <li className="flex items-center gap-2"><span>🕒</span><span>Senin–Jumat, 08.00–17.00 WIB</span></li>
               </ul>
             </div>
           </div>
 
           <div className="pt-6 border-t border-stone-700/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-stone-500">
-            <p>© 2025 T-Cow° — Smart Cattle Health Monitoring System. Hak cipta dilindungi.</p>
+            <p>© 2026 T-Cow° : Temperature Cow Celcius. Hak cipta dilindungi.</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-stone-300 transition-colors">Privasi</a>
               <a href="#" className="hover:text-stone-300 transition-colors">Syarat</a>

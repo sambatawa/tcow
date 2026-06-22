@@ -24,16 +24,15 @@ const mainFeatures = [
     icon: GiCow,
     badge: "Manajemen Sapi",
     title: "Profil & Rekam Medis Lengkap",
-    desc: "Kelola data setiap ekor sapi secara detail — dari profil dasar, riwayat medis, jadwal vaksinasi, hingga log aktivitas harian. Tersedia untuk kandang koloni maupun kandang individu.",
+    desc: "Kelola data setiap sapi secara detail dari profil dasar, riwayat medis-vaksinasi, hingga log aktivitas harian. Tersedia untuk kandang koloni maupun kandang individu.",
     img: IMG_HERD,
     color: "bg-brand-tan-soft dark:bg-brand-forest/30",
     iconColor: "text-brand-forest dark:text-brand-tan",
     points: [
-      "Profil lengkap: nama, breed, usia, bobot, kandangKategori",
-      "Riwayat medis dan jadwal vaksinasi terpusat",
-      "Status reproduksi dan riwayat kebuntingan",
-      "Log aktivitas: pemeriksaan, pengobatan, perawatan kuku",
-      "Tampilan tab Overview, Rekam Medis, Vaksinasi, Genetika",
+      "Profil lengkap: nama, usia, bobot, breed, Kategori kandang",
+      "Riwayat medis dan vaksinasi terpusat",
+      "Log aktivitas: pemeriksaan, pengobatan, perawatan, dan lain-lain",
+      "Tampilan tab Overview, Rekam Medis, Aktivitas",
     ],
   },
   {
@@ -41,15 +40,15 @@ const mainFeatures = [
     icon: FaBroadcastTower,
     badge: "Sensor IoT Wearable",
     title: "Monitoring Suhu Tubuh Real-time",
-    desc: "Sensor collar dan ear-tag merekam suhu tubuh sapi secara kontinu. Data dikirim ke dashboard setiap 8 detik dan disimpan sebagai time-series untuk analisis machine learning.",
+    desc: "Ear-tag merekam suhu tubuh sapi. Data dikirim ke dashboard setiap 6 detik dan disimpan sebagai time-series untuk analisis machine learning.",
     img: IMG_SENSOR,
     color: "bg-brand-sage-soft dark:bg-brand-forest/30",
     iconColor: "text-brand-sage dark:text-brand-cream",
     points: [
-      "Sensor wearable collar/ear-tag pada setiap sapi",
-      "Data suhu tubuh real-time (38–39.5°C = normal)",
+      "Wearable ear-tag pada setiap sapi",
+      "Data suhu tubuh real-time setiap 6 detik",
       "Histori suhu 7 hari untuk tren & anomali",
-      "Alert otomatis saat suhu melampaui ambang",
+      "Alert otomatis saat suhu melampaui batas normal",
       "Status koneksi & baterai sensor terpantau",
     ],
   },
@@ -58,7 +57,7 @@ const mainFeatures = [
     icon: FaBrain,
     badge: "ML Analytics",
     title: "Analitik Berbasis Machine Learning",
-    desc: "Data suhu time-series diproses untuk menghasilkan prediksi kondisi kesehatan sapi. Model ML membantu deteksi dini penyakit sebelum gejala klinis muncul.",
+    desc: "Data suhu time-series diproses untuk menghasilkan prediksi kondisi kesehatan sapi. Model ML membantu deteksi dini penyakit sebelum gejala penyakit muncul.",
     img: IMG_DASH,
     color: "bg-brand-accent-soft dark:bg-brand-forest/30",
     iconColor: "text-brand-accent dark:text-brand-cream",
@@ -66,7 +65,6 @@ const mainFeatures = [
       "Dataset suhu tubuh terstruktur siap untuk ML",
       "Prediksi status kesehatan berbasis perubahan suhu",
       "Grafik tren interaktif dengan Recharts",
-      "Skor kesehatan per sapi (1–10)",
       "Export data untuk pelatihan model eksternal",
     ],
   },
@@ -75,16 +73,15 @@ const mainFeatures = [
     icon: FaWrench,
     badge: "Maintenance Sistem",
     title: "Manajemen Sensor & Perangkat",
-    desc: "Pastikan semua sensor wearable beroperasi optimal. Jadwalkan perawatan, catat riwayat perbaikan, dan pantau status setiap perangkat IoT di lapangan.",
+    desc: "Memastikan semua sensor eartag beroperasi optimal. Perawatan, catat riwayat perbaikan, dan pantau status setiap perangkat IoT di Kandang.",
     img: IMG_BARN,
     color: "bg-brand-cream dark:bg-brand-forest/40",
     iconColor: "text-brand-forest dark:text-brand-cream",
     points: [
-      "Jadwal maintenance sensor terjadwal",
+      "Maintenance sensor & perangkat IoT",
       "Riwayat perbaikan dan penggantian perangkat",
-      "Penugasan teknisi lapangan",
       "Prioritas perbaikan: Tinggi / Sedang / Rendah",
-      "Status maintenance real-time per perangkat",
+      "Status real-time per perangkat",
     ],
   },
 ];
@@ -92,22 +89,22 @@ const mainFeatures = [
 /* ── Service image cards — like homepage section ─────────────────────── */
 const serviceCards = [
   { img: IMG_HERD,   title: "Manajemen Sapi",      sub: "Koloni & Individu" },
-  { img: IMG_SENSOR, title: "Sensor Wearable",      sub: "Suhu real-time" },
-  { img: IMG_VET,    title: "Rekam Medis Digital", sub: "Terintegrasi & terpusat" },
-  { img: IMG_FARMER, title: "Teknisi & Pengguna",     sub: "Multi-role access" },
+  { img: IMG_SENSOR, title: "Wearable Eartag",      sub: "Suhu real-time" },
+  { img: IMG_VET,    title: "Rekam Medis Sapi", sub: "Terintegrasi & terpusat" },
+  { img: IMG_FARMER, title: "Perawatan Perangkat IoT",     sub: "Status Kondisi Perangkat" },
 ];
 
 /* ── Additional features grid ────────────────────────────────────────── */
 const additionalFeatures = [
-  { icon: FaChartBar,    title: "Dashboard Analitik",  desc: "Visualisasi KPI dan grafik interaktif kondisi seluruh sapi." },
-  { icon: FaBell,         title: "Alert & Notifikasi", desc: "Peringatan otomatis via toast saat suhu atau sensor anomali." },
-  { icon: FaMoon,         title: "Dark Mode",           desc: "Tampilan gelap nyaman untuk penggunaan malam hari di kandang." },
-  { icon: FaMobileAlt,   title: "Responsif Mobile",    desc: "Akses penuh dari smartphone, tablet, atau desktop." },
-  { icon: FaUsers,        title: "Multi-User & Peran", desc: "2 role tersedia: Teknisi (seluruh akses) dan Viewer (read-only untuk memantau data ternak)." },
-  { icon: FaFileAlt,     title: "Log Aktivitas",       desc: "Catat semua kegiatan: vaksinasi, pemeriksaan, pengobatan." },
-  { icon: FaClipboard,title: "Jadwal Vaksinasi",    desc: "Pengingat otomatis jadwal vaksinasi per sapi berikutnya." },
-  { icon: FaShieldAlt,       title: "Data Aman",           desc: "Auth berbasis token, protected routes, dan localStorage." },
-  { icon: FaBolt,          title: "Simulasi Real-time",  desc: "setInterval mensimulasikan perubahan suhu sensor setiap 8 detik." },
+  { icon: FaChartBar,    title: "Dashboard Analitik", desc: "Visualisasi grafik interaktif kondisi seluruh sapi." },
+  { icon: FaBell,        title: "Alert & Notifikasi", desc: "Peringatan otomatis via notifikasi saat terdeteksi suhu atau sensor anomali." },
+  { icon: FaMoon,        title: "Dark Mode",          desc: "Tampilan gelap nyaman untuk penggunaan malam hari di kandang." },
+  { icon: FaMobileAlt,   title: "Responsif Mobile",   desc: "Akses penuh dari smartphone, tablet, atau desktop." },
+  { icon: FaUsers,       title: "Multi-User & Peran", desc: "2 role tersedia: Peternak (seluruh akses) dan Viewer (read-only public)." },
+  { icon: FaFileAlt,     title: "Log Aktivitas",      desc: "Catat semua kegiatan: vaksinasi, pemeriksaan, pengobatan." },
+  { icon: FaClipboard,   title: "Flexible",           desc: "Mudah digunakan untuk melakukan pendataan sapi, riwayat medis, maupun aktivitas sapi" },
+  { icon: FaShieldAlt,   title: "Data Aman",          desc: "Auth berbasis token dan protected routes" },
+  { icon: FaBolt,        title: "Data Real-time",     desc: "Menampilkan perubahan suhu sensor setiap 6 detik." },
 ];
 
 /* ════════════════════════════════════════════════════════════ */
@@ -130,7 +127,7 @@ export default function FeaturesPage() {
             All <span className="text-brand-sage">Features</span>
           </h1>
           <p className="mt-4 text-stone-300 max-w-xl leading-relaxed">
-            Dari monitoring suhu tubuh sapi hingga analitik machine learning — semua fitur yang Anda butuhkan dalam satu platform.
+            Dari monitoring suhu tubuh sapi hingga analitik machine learning — semua fitur yang Anda butuhkan dalam satu Website.
           </p>
         </div>
       </section>
@@ -144,11 +141,11 @@ export default function FeaturesPage() {
             <div>
               <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Modul Utama</span>
               <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
-                4 Modul Inti<br />T-Cow°
+                4 Fitur Inti<br />T-Cow°
               </h2>
             </div>
             <p className="text-stone-500 dark:text-stone-400 text-sm max-w-xs leading-relaxed">
-              Setiap modul saling terhubung untuk memberikan gambaran kesehatan sapi yang komprehensif dan akurat.
+              Setiap Fitur saling terhubung untuk memberikan gambaran kesehatan sapi secara menyeluruh dan akurat.
             </p>
           </div>
 
@@ -239,9 +236,9 @@ export default function FeaturesPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-14">
             <span className="text-brand-sage dark:text-brand-accent text-sm font-medium uppercase tracking-widest">Fitur Tambahan</span>
-            <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Dan Masih Banyak Lagi</h2>
+            <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Yang Lebih Banyak Lagi</h2>
             <p className="mt-3 text-stone-500 dark:text-stone-400 max-w-lg mx-auto">
-              T-Cow° terus berkembang dengan fitur-fitur baru yang memudahkan pengelolaan peternakan sapi sehari-hari.
+              T-Cow° terus berkembang dengan fitur-fitur yang memudahkan pengelolaan peternakan sapi sehari-hari.
             </p>
           </div>
 
@@ -249,19 +246,13 @@ export default function FeaturesPage() {
             {additionalFeatures.map((feat, i) => (
               <div
                 key={feat.title}
-                className={`group p-6 rounded-2xl border transition-all hover:-translate-y-1 hover:shadow-lg ${
-                  i === 0
-                    ? "bg-brand-forest border-brand-forest"
-                    : "bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700 hover:border-brand-sage dark:hover:border-brand-sage/60"
-                }`}
+                className="group p-6 rounded-2xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${
-                  i === 0 ? "bg-brand-forest" : "bg-brand-accent-soft dark:bg-brand-forest/30"
-                }`}>
-                  <feat.icon className={`w-5 h-5 ${i === 0 ? "text-white" : "text-brand-sage dark:text-brand-accent"}`} />
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 bg-brand-sage dark:bg-brand-accent">
+                  <feat.icon className="w-5 h-5 text-white" />
                 </div>
-                <h3 className={`font-bold mb-2 ${i === 0 ? "text-white" : "text-stone-800 dark:text-stone-200"}`}>{feat.title}</h3>
-                <p className={`text-sm leading-relaxed ${i === 0 ? "text-brand-cream/70" : "text-stone-500 dark:text-stone-400"}`}>{feat.desc}</p>
+                <h3 className="font-bold mb-2 text-stone-800 dark:text-stone-200">{feat.title}</h3>
+                <p className="text-sm leading-relaxed text-stone-500 dark:text-stone-400">{feat.desc}</p>
               </div>
             ))}
           </div>
@@ -273,12 +264,12 @@ export default function FeaturesPage() {
           ════════════════════════════════════════════════════════ */}
       <section className="py-20 landing-section-dark">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
-          <span className="landing-eyebrow-on-dark">Transformasi Digital</span>
+          <span className="landing-eyebrow-on-dark">MULAI SEKARANG</span>
           <h2 className="mt-3 text-4xl font-bold text-white leading-tight">
             Siap Memanfaatkan Semua Fitur T-Cow°?
           </h2>
           <p className="mt-4 text-brand-cream/80 leading-relaxed max-w-xl mx-auto">
-            Mulai pantau kesehatan sapi Anda hari ini. Daftar gratis dan coba semua fitur platform T-Cow°.
+            Gunakan T-Cow° untuk meningkatkan produktivitas dan kesehatan ternak Anda.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
@@ -291,11 +282,11 @@ export default function FeaturesPage() {
               href="/login"
               className="border border-brand-cream/40 hover:border-brand-accent text-brand-cream hover:text-brand-forest px-8 py-3.5 rounded-full font-medium transition-all"
             >
-              Login Demo
+              Login
             </Link>
           </div>
           <div className="mt-8 flex flex-wrap justify-center gap-5 text-brand-cream/80 text-sm">
-            {["Tanpa biaya setup", "Data aman", "Update gratis", "Dukungan 24/7"].map((item) => (
+            {["Tanpa biaya setup", "Data aman", "Mudah digunakan", "Dukungan 24/7"].map((item) => (
               <div key={item} className="flex items-center gap-2">
                 <FaCheckCircle className="w-4 h-4 text-brand-accent shrink-0" />
                 <span>{item}</span>
