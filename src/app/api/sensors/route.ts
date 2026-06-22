@@ -1,3 +1,4 @@
+// src/app/api/sensors/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
@@ -6,6 +7,7 @@ import {
   normalizeDataSensor,
 } from "@/lib/firebase-rtdb";
 import type { DashboardAlert } from "@/lib/dashboard";
+import { sendTelegramNotification } from "@/lib/telegram"; // <-- Import fungsi utility Telegram
 
 export async function GET() {
   try {
@@ -27,6 +29,48 @@ export async function GET() {
     const sensors = rtdbEmpty && sapiList.length > 0
       ? buildFallbackSensors(sapiList)
       : parsedSensors;
+
+    // ========================================================
+    // LOGIKA GENERATOR NOTIFIKASI TELEGRAM (T-COW°)
+    // ========================================================
+    if (!rtdbEmpty) {
+      sensors.forEach((sapi) => {
+        const batasSuhuDemam = 39.5;
+        const batasBateraiLemah = 25;
+
+        // 1. Kondisi Peringatan Suhu Demam
+        if (sapi.temperature > batasSuhuDemam) {
+          const pesanSuhu = 
+            `⚠️ *PERINGATAN T-COW°: SAPI DEMAM* ⚠️\n\n` +
+            `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
+            `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
+            `===== DATA KONDISI =====\n` +
+            `Building 🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Demam Tinggi)\n` +
+            `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
+            `📍 *Lokasi:* ${sapi.location}\n` +
+            `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
+            `_Mohon petugas lapangan segera mengecek kondisi sapi di kandang._`;
+
+          sendTelegramNotification(pesanSuhu);
+        }
+
+        // 2. Kondisi Peringatan Baterai Lemah (<= 25%)
+        if (sapi.battery > 0 && sapi.battery <= batasBateraiLemah) {
+          const pesanBaterai = 
+            `🔋 *PERINGATAN T-COW°: BATERAI LEMAH* ⚠️\n\n` +
+            `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
+            `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
+            `===== DATA KONDISI =====\n` +
+            `🔋 *Sisa Baterai:* ${sapi.battery}% (⚠️ Segera Ganti/Cas)\n` +
+            `   🌡️ *Suhu Terakhir:* ${sapi.temperature}°C\n` +
+            `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
+            `_Mohon tim teknis segera mengecas baterai eartag._`;
+
+          sendTelegramNotification(pesanBaterai);
+        }
+      });
+    }
+    // ========================================================
 
     const alerts: DashboardAlert[] = sensors
       .filter((s) => s.status !== "Aktif")
