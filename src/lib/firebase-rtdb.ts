@@ -1,3 +1,8 @@
+// src/lib/firebase-rtdb.ts
+
+// ==========================================
+// 1. Fungsi Pembantu Utilitas & Identifikasi
+// ==========================================
 
 export function formatKandangLabel(kandang: string): string {
   if (kandang === "KoloniBesar") return "Koloni Besar";
@@ -103,7 +108,7 @@ function coerceNumber(value: unknown): number | null {
   return null;
 }
 
-function pickNumber(obj: RawSensorNode, keys: string[]): number | null {
+function pickNumber(obj: RawSensorNode, keys: readonly string[] | string[]): number | null {
   for (const k of keys) {
     const direct = coerceNumber(obj[k]);
     if (direct !== null) return direct;
@@ -129,7 +134,7 @@ function pickString(obj: RawSensorNode, keys: string[]): string | null {
 }
 
 function isSensorReadingNode(node: RawSensorNode): boolean {
-  return pickNumber(node, [...TEMPERATURE_KEYS]) !== null;
+  return pickNumber(node, TEMPERATURE_KEYS) !== null;
 }
 
 function parseSnapshotTimestamp(timeKey: string, node: RawSensorNode): number | null {
@@ -233,10 +238,10 @@ function extractMonitoringNode(raw: unknown): Record<string, unknown> | null {
 }
 
 function parseSensorSnapshot(timeKey: string, node: RawSensorNode): Snapshot | null {
-  const temperature = pickNumber(node, [...TEMPERATURE_KEYS]);
+  const temperature = pickNumber(node, TEMPERATURE_KEYS);
   if (temperature === null) return null;
 
-  const battery = pickNumber(node, [...BATTERY_KEYS]);
+  const battery = pickNumber(node, BATTERY_KEYS);
   const timestamp = parseSnapshotTimestamp(timeKey, node);
 
   return {
@@ -399,7 +404,7 @@ function graphLabelFromSnapshot(snapshot: Snapshot): string {
 function snapshotToCattleReading(snapshot: Snapshot): CattleSensorReading {
   const node = snapshot.node;
   const core =
-    pickNumber(node, [...TEMPERATURE_KEYS]) ?? snapshot.temperature;
+    pickNumber(node, TEMPERATURE_KEYS) ?? snapshot.temperature;
   const ear =
     pickNumber(node, ["ear_temperature", "ear_temp", "suhu_telinga"]) ?? core;
 
@@ -420,46 +425,9 @@ function snapshotToCattleReading(snapshot: Snapshot): CattleSensorReading {
   };
 }
 
-function snapshotToSensorReading(
-  eartagKey: string,
-  snapshots: Snapshot[],
-  cattleNames: Map<number, string>
-): SensorReading {
-  const idSapiAngka = sensorKeyToIdsapi(eartagKey) ?? 0;
-  const namaSapi = cattleNames.get(idSapiAngka) || `Sapi ${idSapiAngka}`;
-  const cowKey = idsapiToSensorKey(idSapiAngka);
-  const latest = snapshots[snapshots.length - 1];
-  const staleMinutes =
-    latest.timestamp !== null
-      ? Math.floor((Date.now() - latest.timestamp) / 60000)
-      : null;
-  const { status, offline } = deriveStatus(
-    latest.battery,
-    latest.temperature,
-    staleMinutes
-  );
-
-  return {
-    id: pickString(latest.node, ["id", "sensorId"]) ?? `SEN-${cowKey}`,
-    cattleId: cowKey,
-    cattleName: namaSapi,
-    battery:
-      latest.battery !== null
-        ? Math.max(0, Math.min(100, Math.round(latest.battery)))
-        : 0,
-    temperature: parseFloat(latest.temperature.toFixed(2)),
-    location:
-      pickString(latest.node, ["lokasi", "location", "posisi"]) ||
-      `Kandang ${cowKey}`,
-    kandangKategori: "IoT",
-    status,
-    offline,
-    lastUpdate: formatLastUpdate(latest.timestamp),
-    timestamp: latest.timestamp ?? undefined,
-  };
-}
-
+// ==========================================
 // 2. Core Parser: Normalisasi Data Firebase
+// ==========================================
 
 export function normalizeDataSensor(
   raw: unknown,
@@ -481,11 +449,20 @@ export function normalizeDataSensor(
 
     const idSapiAngka = sensorKeyToIdsapi(eartagKey) ?? 0;
     const cowKey = idsapiToSensorKey(idSapiAngka);
+    const namaSapi = cattleNames.get(idSapiAngka) || `Sapi ${idSapiAngka}`;
+    const latest = snapshots[snapshots.length - 1];
+    
+    const staleMinutes =
+      latest.timestamp !== null
+        ? Math.floor((Date.now() - latest.timestamp) / 60000)
+        : null;
 
     const dbKandang = cattleKandang?.get(idSapiAngka);
-    const rtdbLokasi = pickString(timestampsNode, ["lokasi", "location", "posisi"]);
+    const rtdbLokasi = pickString(latest.node, ["lokasi", "location", "posisi"]);
     const location = rtdbLokasi || (dbKandang ? formatKandangLabel(dbKandang) : `Kandang ${cowKey}`);
-    const eartag = cattleEartag?.get(idSapiAngka) || pickString(timestampsNode, ["id", "sensorId"]) || `EARTAG-${idSapiAngka}`;
+    const eartag = cattleEartag?.get(idSapiAngka) || pickString(latest.node, ["id", "sensorId"]) || `EARTAG-${idSapiAngka}`;
+
+    const { status, offline } = deriveStatus(latest.battery, latest.temperature, staleMinutes);
 
     sensors.push({
       id: eartag,
@@ -495,7 +472,8 @@ export function normalizeDataSensor(
       temperature: parseFloat(latest.temperature.toFixed(2)),
       location,
       kandangKategori: "IoT",
-      status: deriveStatus(latest.battery, latest.temperature, staleMinutes),
+      status,
+      offline,
       lastUpdate: formatLastUpdate(latest.timestamp),
       timestamp: latest.timestamp ?? undefined,
     });
@@ -543,25 +521,6 @@ export function buildCattleSensorData(
   };
 }
 
-export function buildFallbackSensor(
-  s: { idsapi: number; nama_sapi: string; jenis_kelamin: string },
-  message = "Menunggu data Firebase"
-): SensorReading {
-  const cattleId = idsapiToSensorKey(s.idsapi);
-  return {
-    id: `SEN-${cattleId}`,
-    cattleId,
-    cattleName: s.nama_sapi,
-    battery: 0,
-    temperature: 0,
-    location: `Kandang ${cattleId}`,
-    kandangKategori: s.jenis_kelamin === "Betina" ? "Individu" : "Koloni",
-    status: "Error",
-    offline: true,
-    lastUpdate: message,
-  };
-}
-
 export function buildFallbackSensors(
   sapiList: { idsapi: number; nama_sapi: string; jenis_kelamin: string; kandang: string; nomor_eartag: string | null }[],
   cattleEartag?: Map<number, string>
@@ -578,14 +537,15 @@ export function buildFallbackSensors(
       location: formatKandangLabel(s.kandang),
       kandangKategori: "IoT",
       status: "Error" as const,
+      offline: true,
       lastUpdate: "Menunggu data Firebase",
     };
   });
-
-  return { sensors, matchedCount: byIdsapi.size };
 }
 
-// Jembatan URL & Fetching REST API
+// ==========================================
+// 3. Jembatan URL & Fetching REST API
+// ==========================================
 
 function normalizeRtdbBaseUrl(url: string): string {
   let base = url.replace(/^["']|["']$/g, "").replace(/\/$/, "");
