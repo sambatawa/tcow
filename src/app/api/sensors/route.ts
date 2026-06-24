@@ -8,8 +8,8 @@ import {
 } from "@/lib/firebase-rtdb";
 import type { DashboardAlert } from "@/lib/dashboard";
 import { sendTelegramNotification } from "@/lib/telegram";
+import { shouldSendNotification } from "@/lib/ratelimit"; // Impor helper cooldown notification
 
-// Definisikan tipe struktur data Sapi dari Prisma agar tidak terdeteksi 'any'
 interface SapiType {
   idsapi: number;
   nama_sapi: string;
@@ -26,7 +26,6 @@ export async function GET() {
       select: { idsapi: true, nama_sapi: true, jenis_kelamin: true, kandang: true, nomor_eartag: true, status_hidup: true },
     }) as SapiType[];
 
-    // Berikan tipe eksplisit pada Map agar tidak dibaca <unknown, unknown>
     const cattleNames = new Map<number, string>(sapiList.map((s: SapiType) => [s.idsapi, s.nama_sapi]));
     const cattleKandang = new Map<number, string>(sapiList.map((s: SapiType) => [s.idsapi, s.kandang]));
     const cattleEartag = new Map<number, string>(sapiList.map((s: SapiType) => [s.idsapi, s.nomor_eartag ?? `EARTAG-${s.idsapi}`]));
@@ -47,62 +46,72 @@ export async function GET() {
       : parsedSensors;
 
     if (!rtdbEmpty) {
-      sensors.forEach((sapi: any) => {
-        if (sapi.offline) return;
+      // Mengubah ke async loop karena kita perlu melakukan 'await' ke Redis
+      for (const sapi of sensors as any[]) {
+        if (sapi.offline) continue;
 
         const batasSuhuDemam = 39.5;
         const batasSuhuKritisRendah = 36.0;
         const batasBateraiLemah = 25;
 
+        // --- 1. PROTEKSI NOTIFIKASI SUHU TINGGI (DEMAM) ---
         if (sapi.temperature > batasSuhuDemam) {
-          const pesanSuhuTinggi =
-            `⚠️ *PERINGATAN T-COW°: SAPI DEMAM* ⚠️\n\n` +
-            `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
-            `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
-            `===== DATA KONDISI =====\n` +
-            `🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Demam Tinggi)\n` +
-            `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
-            `📍 *Lokasi:* ${sapi.location}\n` +
-            `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
-            `_Mohon petugas lapangan segera mengecek kondisi kesehatan sapi._`;
+          if (await shouldSendNotification(sapi.cattleId, "demam")) {
+            const pesanSuhuTinggi =
+              `⚠️ *PERINGATAN T-COW°: SAPI DEMAM* ⚠️\n\n` +
+              `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
+              `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
+              `===== DATA KONDISI =====\n` +
+              `🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Demam Tinggi)\n` +
+              `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
+              `📍 *Lokasi:* ${sapi.location}\n` +
+              `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
+              `_Mohon petugas lapangan segera mengecek kondisi kesehatan sapi._`;
 
-          sendTelegramNotification(pesanSuhuTinggi);
-        } else if (sapi.temperature > 0 && sapi.temperature < batasSuhuKritisRendah) {
-          const pesanSuhuRendah =
-            `⚠️ *PERINGATAN T-COW°: SUHU KRITIS/ABNORMAL* ⚠️\n\n` +
-            `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
-            `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
-            `===== DATA KONDISI =====\n` +
-            `🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Terlalu Rendah)\n` +
-            `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
-            `📍 *Lokasi:* ${sapi.location}\n` +
-            `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
-            `_Deteksi suhu drop di bawah normal. Harap periksa apakah alat T-Cow° terlepas dari telinga sapi._`;
+            sendTelegramNotification(pesanSuhuTinggi);
+          }
+        } 
+        // --- 2. PROTEKSI NOTIFIKASI SUHU REndah ---
+        else if (sapi.temperature > 0 && sapi.temperature < batasSuhuKritisRendah) {
+          if (await shouldSendNotification(sapi.cattleId, "suhu-rendah")) {
+            const pesanSuhuRendah =
+              `⚠️ *PERINGATAN T-COW°: SUHU KRITIS/ABNORMAL* ⚠️\n\n` +
+              `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
+              `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
+              `===== DATA KONDISI =====\n` +
+              `🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Terlalu Rendah)\n` +
+              `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
+              `📍 *Lokasi:* ${sapi.location}\n` +
+              `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
+              `_Deteksi suhu drop di bawah normal. Harap periksa apakah alat T-Cow° terlepas dari telinga sapi._`;
 
-          sendTelegramNotification(pesanSuhuRendah);
+            sendTelegramNotification(pesanSuhuRendah);
+          }
         }
 
+        // --- 3. PROTEKSI NOTIFIKASI BATERAI LEMAH ---
         if (sapi.battery <= batasBateraiLemah) {
-          const pesanBaterai =
-            `🔋 *PERINGATAN T-COW°: KONDISI BATERAI* ⚠️\n\n` +
-            `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
-            `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
-            `===== DATA KONDISI =====\n` +
-            `🔋 *Sisa Baterai:* ${sapi.battery}% (${sapi.battery === 0 ? "⚠️ ALAT OFF / BATTERY CRITICAL" : "⚠️ Segera Cas"})\n` +
-            `🌡️ *Suhu Terakhir:* ${sapi.temperature}°C\n` +
-            `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
-            `_Mohon tim teknis segera melakukan maintenance/penggantian baterai eartag._`;
+          if (await shouldSendNotification(sapi.cattleId, "baterai")) {
+            const pesanBaterai =
+              `🔋 *PERINGATAN T-COW°: KONDISI BATERAI* ⚠️\n\n` +
+              `🐮 *Nama Sapi:* ${sapi.cattleName}\n` +
+              `🆔 *ID Eartag:* ${sapi.cattleId}\n` +
+              `===== DATA KONDISI =====\n` +
+              `🔋 *Sisa Baterai:* ${sapi.battery}% (${sapi.battery === 0 ? "⚠️ ALAT OFF / BATTERY CRITICAL" : "⚠️ Segera Cas"})\n` +
+              `🌡️ *Suhu Terakhir:* ${sapi.temperature}°C\n` +
+              `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
+              `_Mohon tim teknis segera melakukan maintenance/penggantian baterai eartag._`;
 
-          sendTelegramNotification(pesanBaterai);
+            sendTelegramNotification(pesanBaterai);
+          }
         }
-      });
+      }
     }
 
     const alerts: DashboardAlert[] = sensors
       .filter((s: any) => s.status !== "Aktif")
       .map((s: any) => ({
         id: `sensor-${s.id}`,
-        // Mengembalikan ke "danger" sesuai dengan tipe DashboardAlert tim kamu
         type: s.status === "Error" ? ("danger" as const) : ("warning" as const),
         title: `Sensor ${s.cattleName}`,
         message: s.offline
