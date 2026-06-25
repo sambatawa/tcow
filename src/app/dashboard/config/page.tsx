@@ -81,9 +81,9 @@ export default function SystemConfigPage() {
     <div className="p-6">
       <div className="max-w-9xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
             Konfigurasi Sistem
-          </h1>
+          </h2>
           <p className="text-stone-600 dark:text-stone-400 mt-2">
             Kelola pengaturan sistem, jaringan, sensor, dan perangkat IoT
           </p>
@@ -96,7 +96,7 @@ export default function SystemConfigPage() {
                 <FaCog className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">Pengaturan Umum</h2>
+                <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Pengaturan Umum</h2>
                 <p className="text-sm text-stone-500 dark:text-stone-400">Konfigurasi dasar sistem</p>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function SystemConfigPage() {
                 <FaWifi className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">Pengaturan Jaringan</h2>
+                <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Pengaturan Jaringan</h2>
                 <p className="text-sm text-stone-500 dark:text-stone-400">Konfigurasi WiFi dan koneksi</p>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function SystemConfigPage() {
                 <FaDatabase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">Manajemen Perangkat</h2>
+                <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Manajemen Perangkat</h2>
                 <p className="text-sm text-stone-500 dark:text-stone-400">Status sensor dan perangkat IoT</p>
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function SystemConfigPage() {
                 <FaBell className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">Notifikasi & Alert</h2>
+                <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Notifikasi & Alert</h2>
                 <p className="text-sm text-stone-500 dark:text-stone-400">Kelola notifikasi sistem dan peringatan</p>
               </div>
             </div>
@@ -310,7 +310,7 @@ export default function SystemConfigPage() {
                 <FaDatabase className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">Ekspor Data</h2>
+                <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">Ekspor Data</h2>
                 <p className="text-sm text-stone-500 dark:text-stone-400">Ekspor data sistem dan laporan</p>
               </div>
             </div>

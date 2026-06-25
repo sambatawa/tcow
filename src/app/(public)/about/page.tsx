@@ -73,7 +73,7 @@ export default function AboutPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-forest" />
                 Misi &amp; Visi
               </div>
-              <h2 className="text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                 Inovasi untuk Masa Depan Peternakan Indonesia
               </h2>
               <p className="text-stone-500 dark:text-stone-400 leading-relaxed">
@@ -134,7 +134,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-14">
             <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Tujuan Kami</span>
-            <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100">Apa yang Ingin Kami Capai?</h2>
+            <h2 className="mt-2 text-xl font-bold text-stone-900 dark:text-stone-100">Apa yang Ingin Kami Capai?</h2>
             <p className="mt-3 text-stone-500 dark:text-stone-400 max-w-lg mx-auto">
               Setiap fitur T-Cow° dirancang dengan tujuan spesifik untuk meningkatkan kesehatan ternak serta efisiensi dan inovasi teknologi di bidang peternakan.
             </p>
@@ -167,7 +167,7 @@ export default function AboutPage() {
             <div className="space-y-8">
               <div>
                 <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Tim Kami</span>
-                <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+                <h2 className="mt-2 text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                   Mari Mengenal Orang-orang Hebat di Balik T-Cow°
                 </h2>
                 <p className="mt-4 text-stone-500 dark:text-stone-400 leading-relaxed text-justify">
@@ -206,7 +206,7 @@ export default function AboutPage() {
       <section className="py-20 landing-section-dark">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <span className="landing-eyebrow-on-dark">Mulai Sekarang</span>
-          <h2 className="mt-3 text-4xl font-bold text-white">
+          <h2 className="mt-3 text-xl font-bold text-white">
             Tertarik Menggunakan T-Cow°?
           </h2>
           <p className="mt-4 text-brand-cream/80 max-w-xl mx-auto leading-relaxed">

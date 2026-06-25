@@ -2,28 +2,12 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  FaArrowLeft,
-  FaHeartbeat,
-  FaStethoscope,
-  FaSpinner,
-  FaBatteryQuarter,
-  FaThermometerHalf,
-  FaPlus,
-  FaTrash,
-  FaEdit,
-} from "react-icons/fa";
+import { FaArrowLeft, FaHeartbeat, FaStethoscope,FaSpinner, FaBatteryQuarter, FaThermometerHalf, FaPlus, FaTrash, FaEdit} from "react-icons/fa";
 import { toast } from "sonner";
 import Modal from "@/components/ui/Modal";
 import { formatKandangLabel } from "@/lib/sapi";
 import { cattleHealthColors, statusColors } from "@/lib/styles";
-import type {
-  ActivityInput,
-  CattleListItem,
-  CattleActivity,
-  MedicalRecord,
-  MedicalRecordInput,
-} from "@/lib/sapi";
+import type { ActivityInput, CattleListItem, CattleActivity, MedicalRecord, MedicalRecordInput} from "@/lib/sapi";
 import type { CattleSensorData } from "@/lib/firebase-rtdb";
 
 type Cattle = CattleListItem;

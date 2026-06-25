@@ -138,7 +138,7 @@ export default function HomePage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-forest" />
                 About T-Cow°
               </div>
-              <h2 className="mt-2 text-3xl lg:text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+              <h2 className="mt-2 text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                 Jika Anda mengelola peternakan sapi ini saatnya untuk memantau kesehatan sapi anda secara real-time.
               </h2>
               <p className="text-stone-500 dark:text-stone-200 leading-relaxed">
@@ -176,7 +176,7 @@ export default function HomePage() {
           <div className="mb-12">
             <div>
               <span className="text-brand-forest dark:text-brand-cream text-sm font-medium uppercase tracking-widest">Layanan Kami</span>
-              <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+              <h2 className="mt-2 text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                 Solusi Lengkap untuk Peternakan Modern
               </h2>
             </div>
@@ -234,7 +234,7 @@ export default function HomePage() {
                 <span className="text-brand-sage dark:text-brand-accent text-sm font-medium uppercase tracking-widest">
                   Smart Farming Solutions
                 </span>
-                <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+                <h2 className="mt-2 text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                   Teknologi Wearable untuk Kesehatan Sapi Lebih Baik
                 </h2>
               </div>
@@ -285,7 +285,7 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-14">
             <span className="text-brand-accent text-sm font-medium uppercase tracking-widest">Cattle Health Monitoring</span>
-            <h2 className="mt-2 text-4xl font-bold text-white">Parameter yang Kami Pantau</h2>
+            <h2 className="mt-2 text-xl font-bold text-white">Parameter yang Kami Pantau</h2>
             <p className="mt-3 text-brand-cream/80 max-w-xl mx-auto">
               Setiap sensor wearable memantau kondisi vital sapi secara terus-menerus dan mengirimkan data ke dashboard Anda.
             </p>

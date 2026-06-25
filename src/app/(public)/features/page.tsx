@@ -128,7 +128,7 @@ export default function FeaturesPage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
             <div>
               <span className="text-brand-forest dark:text-brand-forest text-sm font-medium uppercase tracking-widest">Modul Utama</span>
-              <h2 className="mt-2 text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+              <h2 className="mt-2 text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                 4 Fitur Inti<br />T-Cow°
               </h2>
             </div>
@@ -172,7 +172,7 @@ export default function FeaturesPage() {
                   <span className={`text-sm font-semibold ${feat.iconColor}`}>{feat.badge}</span>
                 </div>
 
-                <h2 className="text-3xl font-bold text-stone-900 dark:text-stone-100 leading-tight">{feat.title}</h2>
+                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">{feat.title}</h2>
                 <p className="text-stone-500 dark:text-stone-400 leading-relaxed">{feat.desc}</p>
 
                 <ul className="space-y-3">
@@ -239,7 +239,7 @@ export default function FeaturesPage() {
       <section className="py-20 landing-section-dark">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <span className="landing-eyebrow-on-dark">MULAI SEKARANG</span>
-          <h2 className="mt-3 text-4xl font-bold text-white leading-tight">
+          <h2 className="mt-3 text-xl font-bold text-white leading-tight">
             Siap Memanfaatkan Semua Fitur T-Cow°?
           </h2>
           <p className="mt-4 text-brand-cream/80 leading-relaxed max-w-xl mx-auto">

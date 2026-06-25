@@ -19,14 +19,14 @@ export async function GET(request: NextRequest) {
           (Date.now() - p.lastLogin.getTime()) / (24 * 60 * 60 * 1000)
         );
         return {
-          id: p.uid,
+          uid: p.uid,
           name: p.name,
           email: p.email,
           role: p.role,
           farm: "Adyatma Farm",
           status: daysSinceLogin <= 30 ? "Aktif" : "Nonaktif",
           lastLogin: p.lastLogin.toLocaleString("id-ID"),
-          joinDate: p.createdAt.toISOString().split("T")[0],
+          createdAt: p.createdAt.toISOString(),
         };
       });
       return NextResponse.json({ usersData });
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { uid, firebase_uid, name,email, role, image = "", alamat = ""} = body as {
+    const { uid, firebase_uid, name, email, role, image = "", alamat = ""} = body as {
       uid: string;
       firebase_uid: string;
       name: string;
@@ -109,6 +109,102 @@ export async function POST(request: NextRequest) {
     console.error("[POST /api/pengguna]", error);
     return NextResponse.json(
       { error: "Gagal menyimpan pengguna" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  const user = requireRole(request, ["Teknisi"]);
+  if (user instanceof NextResponse) {
+    return user;
+  }
+
+  try {
+    const body = await request.json();
+    const { uid, name, email, role, alamat } = body as {
+      uid: string;
+      name?: string;
+      email?: string;
+      role?: AppRole;
+      alamat?: string;
+    };
+
+    if (!uid) {
+      return NextResponse.json(
+        { error: "UID wajib diisi" },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.pengguna.findUnique({ where: { uid } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Pengguna tidak ditemukan" },
+        { status: 404 }
+      );
+    }
+
+    const pengguna = await prisma.pengguna.update({
+      where: { uid },
+      data: {
+        ...(name !== undefined && { name: name.trim() }),
+        ...(email !== undefined && { email: email.trim() }),
+        ...(role !== undefined && { role: roleToPrisma(role) }),
+        ...(alamat !== undefined && { alamat: alamat.trim() }),
+        lastLogin: new Date(),
+      },
+    });
+
+    return NextResponse.json(serializePengguna(pengguna));
+  } catch (error) {
+    console.error("[PUT /api/pengguna]", error);
+    return NextResponse.json(
+      { error: "Gagal memperbarui pengguna" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const user = requireRole(request, ["Teknisi"]);
+  if (user instanceof NextResponse) {
+    return user;
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const uid = searchParams.get("uid");
+
+    if (!uid) {
+      return NextResponse.json(
+        { error: "UID wajib diisi" },
+        { status: 400 }
+      );
+    }
+
+    if (user.uid === uid) {
+      return NextResponse.json(
+        { error: "Tidak dapat menghapus akun sendiri" },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.pengguna.findUnique({ where: { uid } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Pengguna tidak ditemukan" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.pengguna.delete({ where: { uid } });
+
+    return NextResponse.json({ message: "Pengguna berhasil dihapus" });
+  } catch (error) {
+    console.error("[DELETE /api/pengguna]", error);
+    return NextResponse.json(
+      { error: "Gagal menghapus pengguna" },
       { status: 500 }
     );
   }
