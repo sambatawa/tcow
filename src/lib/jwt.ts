@@ -60,7 +60,14 @@ export async function verifyToken(token: string): Promise<AuthUser | null> {
   }
 }
 
-export const AUTH_COOKIE_OPTIONS = {
+export const AUTH_COOKIE_OPTIONS: {
+  name: string;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: "lax" | "strict" | "none";
+  path: string;
+  maxAge: number;
+} = {
   name: "auth_token",
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
