@@ -31,10 +31,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-brand-cream/40 dark:bg-[#1a2114]">
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-brand-forest/10 dark:border-brand-accent/15 bg-white/85 dark:bg-[#1a2114]/90 backdrop-blur-xl shadow-sm transition-colors duration-300">
-        <div className="max-w-9xl mx-auto px-6 lg:px-12">
+        <div className="max-w-9xl mx-auto px-4 lg:px-12">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Link href="/" className="flex items-center gap-2.5">
+              <Link href="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-brand-forest dark:bg-brand-accent transition-colors">
                   <TCowLogo className="w-5 h-5" />
                 </div>
@@ -50,20 +50,20 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button onClick={() => setScanOpen(true)} className={`p-2 rounded-full transition-colors ${iconBtn}`}>
                 <FaCamera className="w-4 h-4" />
               </button>
               <button onClick={toggleTheme} className={`p-2 rounded-full transition-colors ${iconBtn}`} aria-label="Toggle theme">
-                {isDark ? <FaSun className="w-4.5 h-4.5" /> : <FaMoon className="w-5 h-5" />}
+                {isDark ? <FaSun className="w-4 h-4" /> : <FaMoon className="w-4 h-4" />}
               </button>
               {isAuthenticated ? (
-                <Link href="/dashboard" className="flex items-center gap-1 bg-brand-accent hover:bg-brand-accent/90 text-brand-forest px-4 py-2 rounded-full text-sm font-semibold transition-colors">
-                  Dashboard <FaChevronRight className="w-4 h-4" />
+                <Link href="/dashboard" className="flex items-center gap-1 bg-brand-accent hover:bg-brand-accent/90 text-brand-forest px-2 py-2 rounded-full text-sm font-semibold transition-colors">
+                  <span className="hidden lg:block">Dashboard</span> <FaChevronRight className="w-3 h-3" />
                 </Link>
               ) : (
                 <Link href="/register" className="flex items-center gap-1 bg-brand-accent hover:bg-brand-accent/90 text-brand-forest px-4 py-2 rounded-full text-sm font-semibold transition-colors">
-                  Daftar <FaChevronRight className="w-4 h-4" />
+                  Daftar <FaChevronRight className="w-3 h-3" />
                 </Link>
               )}
               <button className={`md:hidden p-2 rounded-lg transition-colors ${mobileBtn}`} onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
@@ -72,7 +72,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           {mobileOpen && (
-            <div className="md:hidden mt-2 rounded-2xl border border-brand-forest/10 dark:border-brand-accent/15 bg-white/95 dark:bg-[#1a2114]/95 p-3 shadow-lg space-y-1">
+            <div className="md:hidden my-2 rounded-2xl border border-brand-forest/10 dark:border-brand-accent/15 bg-white/95 dark:bg-[#1a2114]/95 p-3 shadow-lg space-y-1">
               {navLinks.map((link, i) => (
                 <Link key={`mob-${link.href}-${i}`} href={link.href} onClick={() => setMobileOpen(false)}
                   className={`block px-4 py-2.5 rounded-xl text-sm transition-colors ${
@@ -85,9 +85,6 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
               <div className="pt-2 px-4 flex flex-col gap-2">
-                <button onClick={() => { setScanOpen(true); setMobileOpen(false); }} className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-forest text-white text-sm font-semibold">
-                  <FaCamera className="w-4 h-4" />
-                </button>
                 <Link href="/login" onClick={() => setMobileOpen(false)} className="text-center py-2.5 rounded-xl border border-brand-forest/15 dark:border-brand-accent/20 text-sm text-brand-forest/75 dark:text-brand-cream/75">
                   Masuk
                 </Link>
@@ -107,8 +104,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center">
-                  <TCowLogo className="w-4 h-4" />
+                <div className=" w-8 h-8 rounded-lg flex items-center justify-center bg-brand-forest dark:bg-brand-accent transition-colors">
+                  <TCowLogo className="w-5 h-5" />
                 </div>
                 <span className="text-white font-extrabold text-lg tracking-tight">T-Cow°</span>
               </div>
@@ -135,10 +132,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm">Kontak</h4>
               <ul className="space-y-2.5 text-sm text-stone-400">
-                <li className="flex items-start gap-2"><span>📍</span><span>Jl. Kumbang No.14, RT.02/RW.06, Babakan, Kecamatan Bogor Tengah, Kota Bogor, Jawa Barat 16128</span></li>
-                <li className="flex items-center gap-2"><span>📞</span><span>(0251) 8329101</span></li>
-                <li className="flex items-center gap-2"><span>✉️</span><span>@peternakanvokasiipb</span></li>
-                <li className="flex items-center gap-2"><span>🕒</span><span>Senin–Jumat, 08.00–17.00 WIB</span></li>
+                <li className="flex items-start gap-2"><span>Jl. Kumbang No.14, RT.02/RW.06, Babakan, Kecamatan Bogor Tengah, Kota Bogor, Jawa Barat 16128</span></li>
+                <li className="flex items-center gap-2"><span>(0251) 8329101</span></li>
+                <li className="flex items-center gap-2"><span>@peternakanvokasiipb</span></li>
               </ul>
             </div>
           </div>

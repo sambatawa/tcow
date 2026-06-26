@@ -355,10 +355,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 landing-section-dark">
+      <section className="py-20 bg-brand-sage">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
-          <span className="text-brand-accent text-sm font-medium uppercase tracking-widest">Mulai Sekarang</span>
-          <h2 className="mt-3 text-4xl font-bold text-white">
+          <h2 className="mt-3 text-3xl font-bold text-white">
             Daftarkan Diri Anda dan Mulai Pantau Kesehatan Sapi Peternakan Anda!
           </h2>
           <p className="mt-4 text-brand-cream/80 max-w-xl mx-auto leading-relaxed">
@@ -369,22 +368,14 @@ export default function HomePage() {
               href="/register"
               className="landing-btn-accent"
             >
-              Daftar Gratis <FaArrowRight className="w-4 h-4" />
+              Daftar <FaArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/features"
-              className="border border-brand-sage/60 hover:border-brand-accent text-brand-cream/80 hover:text-white px-8 py-3.5 rounded-full font-medium transition-all"
+              className="border border-brand-cream/80 hover:border-brand-accent text-brand-cream/80 hover:text-white px-8 py-3.5 rounded-full font-medium transition-all"
             >
               Lihat Fitur
             </Link>
-          </div>
-          <div className="mt-8 flex flex-wrap justify-center gap-5 text-brand-cream/80 text-sm">
-            {["Tanpa biaya setup", "Data aman", "Mudah digunakan", "Dukungan 24/7"].map((item) => (
-              <div key={item} className="flex items-center gap-2">
-                <FaCheckCircle className="w-4 h-4 text-brand-accent shrink-0" />
-                <span>{item}</span>
-              </div>
-            ))}
           </div>
         </div>
       </section>
