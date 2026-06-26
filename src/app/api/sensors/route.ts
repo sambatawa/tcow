@@ -12,6 +12,7 @@ interface SapiType {
   jenis_kelamin: string;
   kandang: string;
   nomor_eartag: string | null;
+  nama_eartag: string | null;
   status_hidup: string;
 }
 
@@ -23,14 +24,24 @@ export async function GET(request: NextRequest) {
   try {
     const sapiList = await prisma.sapi.findMany({
       orderBy: { idsapi: "asc" },
-      select: { idsapi: true, nama_sapi: true, jenis_kelamin: true, kandang: true, nomor_eartag: true, status_hidup: true },
+      select: { idsapi: true, nama_sapi: true, jenis_kelamin: true, kandang: true, nomor_eartag: true, nama_eartag: true, status_hidup: true },
     }) as SapiType[];
 
-    const cattleNames = new Map<number, string>(sapiList.map((s: SapiType) => [s.idsapi, s.nama_sapi]));
-    const cattleKandang = new Map<number, string>(sapiList.map((s: SapiType) => [s.idsapi, s.kandang]));
-    const cattleEartag = new Map<number, string>(sapiList.map((s: SapiType) => [s.idsapi, s.nomor_eartag ?? `EARTAG-${s.idsapi}`]));
+    const eartagToIdsapi = new Map<string, number>();
+    const cattleEartag = new Map<number, string>();
+    const cattleNames = new Map<number, string>();
+    const cattleKandang = new Map<number, string>();
+    sapiList.forEach((s: SapiType) => {
+      cattleNames.set(s.idsapi, s.nama_sapi);
+      cattleKandang.set(s.idsapi, s.kandang);
+      const eartag = s.nama_eartag ?? `eartag_${s.idsapi}`;
+      cattleEartag.set(s.idsapi, eartag);
+      if (s.nama_eartag) {
+        eartagToIdsapi.set(s.nama_eartag.toLowerCase(), s.idsapi);
+      }
+    });
     const { data: raw, error: fetchError } = await fetchDataSensorFromRtdbDetailed();
-    const { sensors: parsedSensors, tempHistory } = normalizeDataSensor( raw, cattleNames, cattleKandang, cattleEartag);
+    const { sensors: parsedSensors, tempHistory } = normalizeDataSensor( raw, cattleNames, cattleKandang, cattleEartag, eartagToIdsapi);
     const matchedCount = parsedSensors.length;
     const rtdbEmpty = parsedSensors.length === 0;
     const sensors = rtdbEmpty && sapiList.length > 0
@@ -60,7 +71,7 @@ export async function GET(request: NextRequest) {
 
             sendTelegramNotification(pesanSuhuTinggi);
           }
-        } 
+        }
         else if (sapi.temperature > 0 && sapi.temperature < batasSuhuKritisRendah) {
           if (await shouldSendNotification(sapi.cattleId, "suhu-rendah")) {
             const pesanSuhuRendah =
@@ -122,7 +133,7 @@ export async function GET(request: NextRequest) {
       cowEartags: Object.fromEntries(
         sapiList.map((s: SapiType) => [
           `S${String(s.idsapi).padStart(3, "0")}`,
-          s.nomor_eartag ?? `EARTAG-${s.idsapi}`,
+          s.nama_eartag ?? `eartag_${s.idsapi}`,
         ])
       ),
       updatedAt: new Date().toISOString(),

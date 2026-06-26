@@ -5,12 +5,46 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+function parseDatabaseUrl(url: string): {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
+} {
+  const match = url.match(/^mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)$/);
+  if (!match) {
+    throw new Error("Invalid DATABASE_URL format");
+  }
+  return {
+    user: decodeURIComponent(match[1]),
+    password: decodeURIComponent(match[2]),
+    host: match[3],
+    port: parseInt(match[4], 10),
+    database: match[5],
+  };
+}
+
 function createPrismaClient(): PrismaClient {
   const url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error("DATABASE_URL is not set");
   }
-  const adapter = new PrismaMariaDb(url);
+
+  const { host, port, user, password, database } = parseDatabaseUrl(url);
+
+  const adapter = new PrismaMariaDb({
+    host,
+    port,
+    user,
+    password,
+    database,
+    ssl: {},
+    connectionLimit: 5,
+    connectTimeout: 15000,
+    acquireTimeout: 15000,
+  } as any);
+
   return new PrismaClient({ adapter } as any);
 }
 

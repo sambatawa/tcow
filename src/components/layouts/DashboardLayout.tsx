@@ -11,11 +11,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { ReadOnlyProvider } from "@/context/ReadOnlyContext";
 import type { DashboardAlert } from "@/lib/dashboard";
-import type { HealthAlert } from "@/lib/firebase-rtdb";
-import { fetchDataSensorFromRtdb, extractHealthAlerts } from "@/lib/firebase-rtdb";
 import { TCowLogo } from "@/components/ui/TCowLogo";
 import { RealtimeClock } from "@/components/ui/RealtimeClock";
 import { swalSuccess } from "@/lib/swal";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface NavItem {
   href: string;
@@ -46,8 +45,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const [alertsData, setAlertsData] = useState<DashboardAlert[]>([]);
-  const [firebaseAlerts, setFirebaseAlerts] = useState<HealthAlert[]>([]);
+  const { dashboardAlerts: notifAlerts, loading: notifLoading } = useNotifications(30000);
   const { user, logout, isAuthenticated, isLoading } = useAuth();
   const { isDark, toggleTheme, mounted } = useTheme();
   const pathname = usePathname();
@@ -59,46 +57,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, router]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const sensorRes = await fetch("/api/sensors", { credentials: "include" });
-        if (!sensorRes.ok) return;
-
-        const sensors = await sensorRes.json() as {
-          cowNames?: Record<string, string>;
-          cowEartags?: Record<string, string>;
-        };
-
-        if (!sensors.cowNames || Object.keys(sensors.cowNames).length === 0) return;
-
-        const raw = await fetchDataSensorFromRtdb();
-        if (!raw) return;
-
-        const cattleNames = new Map<number, string>();
-        Object.entries(sensors.cowNames).forEach(([key, name]) => {
-          const match = key.match(/\d+/);
-          if (match) cattleNames.set(parseInt(match[0], 10), name);
-        });
-
-        const cattleEartags = new Map<number, string>();
-        Object.entries(sensors.cowEartags ?? {}).forEach(([key, eartag]) => {
-          const match = key.match(/\d+/);
-          if (match) cattleEartags.set(parseInt(match[0], 10), eartag);
-        });
-
-        const healthAlerts = extractHealthAlerts(raw, cattleNames, cattleEartags);
-        setFirebaseAlerts(healthAlerts);
-        setAlertsData(healthAlerts.slice(0, 8));
-      } catch (e) {
-        setAlertsData([]);
-        setFirebaseAlerts([]);
-      }
-    })();
-  }, [isAuthenticated]);
-
   const navItems = user?.role === "Teknisi" ? teknisiNavItems : peternakNavItems;
-  const unreadAlerts = alertsData.filter((a) => !a.read).length;
+  const unreadAlerts = notifAlerts.filter((a) => !a.read).length;
   
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -239,12 +199,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full">{unreadAlerts} baru</span>
                   </div>
                   <div className="max-h-72 overflow-y-auto divide-y divide-[#e5d7c4]/20 dark:divide-[#354024]/30">
-                    {alertsData.length === 0 ? (
+                    {notifAlerts.length === 0 ? (
                       <div className="px-4 py-6 text-center">
-                        <p className="text-xs text-stone-400 mt-1">Tidak ada notifikasi kesehatan</p>
+                        <p className="text-xs text-stone-400 mt-1">
+                          {notifLoading ? "Memuat notifikasi..." : "Tidak ada notifikasi kesehatan"}
+                        </p>
                       </div>
                     ) : (
-                      alertsData.slice(0, 5).map((alert) => (
+                      notifAlerts.slice(0, 5).map((alert) => (
                         <div key={alert.id} className={`px-4 py-3 hover:bg-[#e5d7c4]/20 dark:hover:bg-[#354024]/30 transition-colors ${!alert.read ? "bg-[#54cd19]/10 dark:bg-[#54cd19]/5" : ""}`}>
                           <div className="flex gap-2 items-start">
                             <span className="text-base mt-0.5">

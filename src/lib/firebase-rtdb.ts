@@ -275,7 +275,6 @@ function extractMonitoringNode(raw: unknown): Record<string, unknown> | null {
   if (!raw || typeof raw !== "object") return null;
 
   const rawObj = raw as Record<string, unknown>;
-
   if (
     rawObj.monitoring &&
     typeof rawObj.monitoring === "object" &&
@@ -297,7 +296,6 @@ function parseSensorSnapshot(timeKey: string, node: RawSensorNode): Snapshot | n
 
   const battery = pickNumber(node, BATTERY_KEYS);
   const timestamp = parseSnapshotTimestamp(timeKey, node);
-
   return {
     label: timeKey,
     temperature,
@@ -482,7 +480,8 @@ export function normalizeDataSensor(
   raw: unknown,
   cattleNames: Map<number, string>,
   cattleKandang?: Map<number, string>,
-  cattleEartag?: Map<number, string>
+  cattleEartag?: Map<number, string>,
+  eartagToIdsapi?: Map<string, number>
 ): { sensors: SensorReading[]; tempHistory: TempHistoryPoint[] } {
   const monitoring = extractMonitoringNode(raw);
   if (!monitoring) {
@@ -495,12 +494,17 @@ export function normalizeDataSensor(
 
   byEartag.forEach((snapshots, eartagKey) => {
     if (snapshots.length === 0) return;
+    let idSapiAngka: number;
+    if (eartagToIdsapi && eartagToIdsapi.has(eartagKey.toLowerCase())) {
+      idSapiAngka = eartagToIdsapi.get(eartagKey.toLowerCase())!;
+    } else {
+      idSapiAngka = sensorKeyToIdsapi(eartagKey) ?? 0;
+    }
 
-    const idSapiAngka = sensorKeyToIdsapi(eartagKey) ?? 0;
     const cowKey = idsapiToSensorKey(idSapiAngka);
     const namaSapi = cattleNames.get(idSapiAngka) || `Sapi ${idSapiAngka}`;
     const latest = snapshots[snapshots.length - 1];
-    
+
     const staleMinutes =
       latest.timestamp !== null
         ? Math.floor((Date.now() - latest.timestamp) / 60000)
@@ -509,10 +513,9 @@ export function normalizeDataSensor(
     const dbKandang = cattleKandang?.get(idSapiAngka);
     const rtdbLokasi = pickString(latest.node, ["lokasi", "location", "posisi"]);
     const location = rtdbLokasi || (dbKandang ? formatKandangLabel(dbKandang) : `Kandang ${cowKey}`);
-    const eartag = cattleEartag?.get(idSapiAngka) || pickString(latest.node, ["id", "sensorId"]) || `EARTAG-${idSapiAngka}`;
+    const eartag = cattleEartag?.get(idSapiAngka) || eartagKey;
 
     const { status, offline } = deriveStatus(latest.battery, latest.temperature, staleMinutes);
-
     sensors.push({
       id: eartag,
       cattleId: cowKey,
@@ -664,7 +667,7 @@ export async function fetchDataSensorFromRtdbDetailed(): Promise<RtdbFetchResult
 
       if (!res.ok) {
         const body = await res.text().catch(() => "");
-        lastError = `[RTDB] ${path} → HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`;
+        lastError = `database ${path} → HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`;
         continue;
       }
 
@@ -672,13 +675,13 @@ export async function fetchDataSensorFromRtdbDetailed(): Promise<RtdbFetchResult
       if (data === null) continue;
 
       if (typeof data === "object" && data !== null && "error" in data) {
-        lastError = `[RTDB] ${path} → ${(data as { error: string }).error}`;
+        lastError = `database ${path} → ${(data as { error: string }).error}`;
         continue;
       }
 
       return { data, error: null, path };
     } catch (error) {
-      lastError = `[RTDB] ${path} gagal: ${error instanceof Error ? error.message : String(error)}`;
+      lastError = `databae ${path} gagal: ${error instanceof Error ? error.message : String(error)}`;
     }
   }
 
@@ -686,7 +689,7 @@ export async function fetchDataSensorFromRtdbDetailed(): Promise<RtdbFetchResult
     return {
       data: null,
       error:
-        "Firebase RTDB 401 Permission denied. Cek Firebase Console → Realtime Database → Rules: pastikan ada rule untuk allow read.",
+        "Firebase Permission denied. Cek Firebase Console",
       path: null,
     };
   }

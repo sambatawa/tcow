@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { FaBalanceScale, FaChevronRight, FaArrowRight, FaHeartbeat, FaExclamationTriangle, FaExclamationCircle, FaInfoCircle, FaCheckCircle, FaDownload, FaSpinner } from "react-icons/fa";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
@@ -8,9 +8,10 @@ import { GiCow } from "react-icons/gi";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend, ReferenceLine } from "recharts";
 import { swalSuccess, swalError } from "@/lib/swal";
 import { useSensors } from "@/hooks/useSensors";
+import { useNotifications } from "@/hooks/useNotifications";
 import { getChartColor, type DashboardData, type DashboardAlert } from "@/lib/dashboard";
 import { alertColors, dashboardStatusStyle, healthProgressColors } from "@/lib/styles";
-import { extractHealthAlerts, fetchDataSensorFromRtdb, type HealthAlert } from "@/lib/firebase-rtdb";
+import { type HealthAlert } from "@/lib/firebase-rtdb";
 
 function StatCard({ title, value, sub, icon: Icon, iconBg, trend, link }: {
   title: string;
@@ -107,69 +108,108 @@ function healthAlertToDashboardAlert(alert: HealthAlert): DashboardAlert & { ear
   };
 }
 
+// Custom tooltip untuk grafik suhu (sama seperti di sensors page)
+function CustomTempTooltip({
+  active,
+  payload,
+  label,
+  cowNames,
+}: {
+  active?: boolean;
+  payload?: { dataKey: string; value: number; color: string }[];
+  label?: string;
+  cowNames: Record<string, string>;
+}) {
+  if (!active || !payload?.length) return null;
+
+  const tempStatus = (t: number) => {
+    if (t > 39.5)
+      return { label: "Demam", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20" };
+    if (t < 38.0)
+      return { label: "Rendah", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20" };
+    return { label: "Normal", color: "text-[#54cd19] dark:text-[#889063]", bg: "bg-[#e5d7c4]/30 dark:bg-[#354024]/30" };
+  };
+
+  return (
+    <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-lg p-3 text-xs">
+      <p className="font-semibold text-stone-600 dark:text-stone-300 mb-2">{label}</p>
+      {payload.map((p) => {
+        const st = tempStatus(p.value);
+        return (
+          <div key={p.dataKey} className="flex items-center justify-between gap-4 mb-1">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+              <span className="text-stone-600 dark:text-stone-400">{cowNames[p.dataKey] ?? p.dataKey}</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-semibold" style={{ color: p.color }}>
+              {p.value.toFixed(1)}°C
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${st.bg} ${st.color}`}>{st.label}</span>
+            </div>
+          </div>
+        );
+      })}
+      <div className="border-t border-stone-100 dark:border-stone-800 mt-2 pt-1.5 text-stone-400">
+        Suhu normal: 38.0–39.5°C
+      </div>
+    </div>
+  );
+}
+
 export default function MainDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
-  const [firebaseAlerts, setFirebaseAlerts] = useState<HealthAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dimmedCows, setDimmedCows] = useState<Set<string>>(new Set());
   const { tempHistory: sensorHistory, cowNames: sensorCowNames, cowEartags: sensorCowEartags } = useSensors(10000);
+  const { alerts: firebaseAlerts } = useNotifications(10000);
 
+  // Fetch dashboard data from API
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
+    async function fetchDashboardData() {
       try {
         const res = await fetch("/api/dashboard", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat dashboard");
-        const json = (await res.json()) as DashboardData;
-        if (!cancelled) setData(json);
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Error");
-          swalError("Gagal", "Gagal memuat data dashboard");
+        if (!res.ok) {
+          throw new Error("Gagal mengambil data dashboard");
         }
+        const json = await res.json();
+        setData(json);
+        setError(null);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Error mengambil data");
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    }
+    fetchDashboardData();
   }, []);
 
+  // Derived state for chart - must be before any useEffect that depends on it
+  const chartSeriesKeys = useMemo(() => {
+    return (sensorHistory?.length ?? 0) > 0
+      ? Object.keys(sensorHistory[0]).filter((key) => key !== "label")
+      : [];
+  }, [sensorHistory]);
+
+  // Constants for temperature thresholds
+  const suhuRendah = 38.0;
+  const suhuTinggi = 39.5;
+
+  // Reset dimmed cows when sensor data changes
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const raw = await fetchDataSensorFromRtdb();
-        if (cancelled || !raw) return;
+    setDimmedCows(new Set());
+  }, [sensorHistory.length]);
 
-        const cowNames = sensorCowNames ?? {};
-        const cowEartags = sensorCowEartags ?? {};
-
-        const cattleNames = new Map<number, string>();
-        Object.entries(cowNames).forEach(([key, name]) => {
-          const match = key.match(/\d+/);
-          if (match) {
-            cattleNames.set(parseInt(match[0], 10), name);
-          }
-        });
-        const cattleEartags = new Map<number, string>();
-        Object.entries(cowEartags).forEach(([key, eartag]) => {
-          const match = key.match(/\d+/);
-          if (match) {
-            cattleEartags.set(parseInt(match[0], 10), eartag);
-          }
-        });
-
-        const alerts = extractHealthAlerts(raw, cattleNames, cattleEartags);
-        if (!cancelled) setFirebaseAlerts(alerts);
-      } catch {
+  const toggleCowDim = (key: string) => {
+    setDimmedCows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [sensorCowNames, sensorCowEartags]);
+      return newSet;
+    });
+  };
 
   const handleExport = () => {
     if (!data?.cattle.length) {
@@ -219,13 +259,6 @@ export default function MainDashboard() {
   const { stats, cattle } = data ?? { stats: null, cattle: [] };
   const total = stats?.totalSapi || 1;
   const needsAction = firebaseAlerts?.length ?? 0;
-  const chartSeriesKeys = (sensorHistory?.length ?? 0) > 0
-    ? Object.keys(sensorHistory[0]).filter((key) => key !== "label")
-    : [];
-
-  // Constants for temperature thresholds
-  const suhuRendah = 38.0;
-  const suhuTinggi = 39.5;
 
   return (
     <div className="p-6 space-y-6">
@@ -293,31 +326,25 @@ export default function MainDashboard() {
 
           {sensorHistory.length > 0 && chartSeriesKeys.length > 0 ? (
             <div className="relative">
-              <div className="flex justify-between text-[10px] text-stone-400 mb-1 px-1">
-                <span>37.5°C</span>
-                <span className="text-[#54cd19]">Normal {suhuRendah}–{suhuTinggi}°C</span>
-                <span>41.0°C</span>
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={sensorHistory} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" strokeOpacity={0.5} />
-                  <XAxis 
-                    dataKey="label" 
-                    tick={{ fontSize: 10, fill: "#a8a29e" }} 
-                    tickLine={false} axisLine={{ stroke: "#e7e5e4" }}
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={sensorHistory} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" strokeOpacity={0.6} />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#a8a29e" }}
+                    tickLine={false}
+                    interval={3}
+                    axisLine={{ stroke: "#e7e5e4" }}
                   />
-                  <YAxis tick={{ fontSize: 10, fill: "#a8a29e" }} 
-                    tickLine={false} 
-                    axisLine={false} 
-                    width={40} 
-                    domain={[20, 50]} 
+                  <YAxis
+                    domain={[20, 50]}
+                    tick={{ fontSize: 11, fill: "#a8a29e" }}
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={(v) => `${v}°`}
+                    width={36}
                   />
-                  <Tooltip formatter={(value, name) => [
-                      `${value}C`,
-                      sensorCowNames[name as string] || `Eartag ${name}`
-                    ]} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                  <Tooltip content={<CustomTempTooltip cowNames={sensorCowNames} />} />
                   <ReferenceLine
                     y={suhuTinggi}
                     stroke="#ef4444"
@@ -332,18 +359,40 @@ export default function MainDashboard() {
                     strokeWidth={1.5}
                     label={{ value: `Min Normal ${suhuRendah}°C`, fill: "#10b981", fontSize: 10, position: "insideBottomRight" }}
                   />
-                  <ReferenceLine
-                    y={suhuRendah}
-                    stroke="#10b981"
-                    strokeDasharray="0"
-                    strokeWidth={0}
-                  />
-
                   {chartSeriesKeys.map((key, index) => (
-                    <Line key={key} type="monotone" dataKey={key} name={sensorCowNames[key] || key} stroke={getChartColor(index)} strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} connectNulls/>
+                    <Line
+                      key={key}
+                      type="monotone"
+                      dataKey={key}
+                      name={sensorCowNames[key] || key}
+                      stroke={getChartColor(index)}
+                      strokeWidth={2}
+                      strokeOpacity={dimmedCows.has(key) ? 0.2 : 1}
+                      dot={false}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                      connectNulls
+                      onClick={() => toggleCowDim(key)}
+                      style={{ cursor: "pointer" }}
+                    />
                   ))}
                 </LineChart>
               </ResponsiveContainer>
+              <div className="flex flex-wrap gap-2 mt-4 px-1">
+                {chartSeriesKeys.map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleCowDim(key)}
+                    className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+                      dimmedCows.has(key)
+                        ? "border-stone-300 dark:border-stone-600 text-stone-400 bg-stone-100 dark:bg-stone-800 opacity-50"
+                        : "border-transparent text-white font-medium"
+                    }`}
+                    style={!dimmedCows.has(key) ? { backgroundColor: getChartColor(chartSeriesKeys.indexOf(key)) } : {}}
+                  >
+                    <span>{sensorCowNames[key] || key}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center text-stone-400">

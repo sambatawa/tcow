@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { FaArrowLeft, FaHeartbeat, FaStethoscope, FaSpinner, FaBatteryQuarter, FaThermometerHalf, FaPlus, FaTrash, FaEdit } from "react-icons/fa";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { swalSuccess, swalError } from "@/lib/swal";
 import Modal from "@/components/ui/Modal";
 import { formatKandangLabel } from "@/lib/sapi";
@@ -486,31 +487,80 @@ export default function CattleProfilePage() {
             <h3 className="font-semibold text-stone-800 dark:text-stone-200 mb-4">Riwayat Suhu Sensor</h3>
             {sensorData?.historicalReadings && sensorData.historicalReadings.length > 0 ? (
               <div className="space-y-2">
-                <div className="h-64 flex items-end justify-around gap-1 p-4 bg-stone-50 dark:bg-stone-800 rounded-lg">
-                  {sensorData.historicalReadings.slice(-20).map((reading, idx) => {
-                    const maxTemp = Math.max(
-                      ...sensorData.historicalReadings.map((r) => r.core_temperature)
-                    );
-                    const minTemp = Math.min(
-                      ...sensorData.historicalReadings.map((r) => r.core_temperature)
-                    );
-                    const range = maxTemp - minTemp || 1;
-                    const normalizedHeight = ((reading.core_temperature - minTemp) / range) * 90 + 10;
-                    const isNormal = reading.core_temperature >= 36 && reading.core_temperature <= 40;
-
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex-1 rounded-t-lg transition-all hover:opacity-80 ${
-                          isNormal
-                            ? "bg-lime-400 dark:bg-lime-600"
-                            : "bg-orange-400 dark:bg-orange-600"
-                        }`}
-                        style={{ height: `${normalizedHeight}%` }}
-                        title={`${reading.core_temperature.toFixed(1)}°C`}
-                      />
-                    );
-                  })}
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart
+                    data={sensorData.historicalReadings.slice(-20).map((r, idx) => ({
+                      label: `${idx + 1}`,
+                      core: r.core_temperature,
+                      ear: r.ear_temperature,
+                      time: r.timestamp
+                    }))}
+                    margin={{ top: 5, right: 16, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" strokeOpacity={0.6} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 10, fill: "#a8a29e" }}
+                      tickLine={false}
+                      axisLine={{ stroke: "#e7e5e4" }}
+                    />
+                    <YAxis
+                      domain={[35, 42]}
+                      tick={{ fontSize: 10, fill: "#a8a29e" }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `${v}°`}
+                      width={36}
+                    />
+                    <Tooltip
+                      formatter={(value, name) => [`${value}°C`, name === 'core' ? 'Suhu Core' : 'Suhu Telinga']}
+                      labelFormatter={(label, payload) => payload?.[0]?.payload?.time || label}
+                    />
+                    <ReferenceLine
+                      y={40}
+                      stroke="#ef4444"
+                      strokeDasharray="4 3"
+                      strokeWidth={1.5}
+                      label={{ value: "Demam >40°C", fill: "#ef4444", fontSize: 10, position: "insideTopRight" }}
+                    />
+                    <ReferenceLine
+                      y={36}
+                      stroke="#10b981"
+                      strokeDasharray="4 3"
+                      strokeWidth={1.5}
+                      label={{ value: "36°C", fill: "#10b981", fontSize: 10, position: "insideBottomRight" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="core"
+                      name="Suhu Core"
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ear"
+                      name="Suhu Telinga"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="flex items-center justify-center gap-4 mt-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                    <span className="text-xs text-stone-500">Suhu Core</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                    <span className="text-xs text-stone-500">Suhu Telinga</span>
+                  </div>
                 </div>
                 <div className="text-xs text-stone-400 text-center">
                   {sensorData.historicalReadings.length} pembacaan sensor terbaru

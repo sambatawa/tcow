@@ -114,7 +114,7 @@ function TrendIcon({
 export default function SensorMonitoring() {
   const { isReadOnly } = useReadOnly();
   const { sensors, tempHistory: history, cowNames, loading, error, refresh, updatedAt, source} = useSensors(30000);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [dimmedCows, setDimmedCows] = useState<Set<string>>(new Set());
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -122,14 +122,10 @@ export default function SensorMonitoring() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  // Reset dimmed cows when sensor data changes
   useEffect(() => {
-    if (sensors.length > 0 && selected.length === 0) {
-      const timeout = setTimeout(() => {
-        setSelected(sensors.map((s) => s.cattleId));
-      }, 0);
-      return () => clearTimeout(timeout);
-    }
-  }, [sensors, selected.length]);
+    setDimmedCows(new Set());
+  }, [sensors.length]);
 
   const cowColors = buildCowColors(
     sensors.map((s) => s.cattleId)
@@ -160,10 +156,17 @@ export default function SensorMonitoring() {
   const lowBatCount   = sensors.filter((s) => s.status === "Baterai Rendah").length;
   const errorCount    = sensors.filter((s) => s.status === "Error").length;
   const feverCount    = sensors.filter((s) => s.temperature > suhuTinggi && s.status !== "Error").length;
-  const toggleCow = (key: string) =>
-    setSelected((prev) =>
-      prev.includes(key) ? (prev.length > 1 ? prev.filter((k) => k !== key) : prev) : [...prev, key]
-    );
+  const toggleCowDim = (key: string) => {
+    setDimmedCows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
     const gridColsClass = {
       1: "lg:grid-cols-1",
       2: "lg:grid-cols-2",
@@ -372,9 +375,7 @@ export default function SensorMonitoring() {
               strokeWidth={1.5}
               label={{ value: `Min Normal ${suhuRendah}°C`, fill: "#10b981", fontSize: 10, position: "insideBottomRight" }}
             />
-            {Object.entries(cowColors)
-              .filter(([key]) => selected.includes(key))
-              .map(([key, color]) => (
+            {Object.entries(cowColors).map(([key, color]) => (
                 <Line
                   key={`cow-line-${key}`}
                   type="monotone"
@@ -382,9 +383,12 @@ export default function SensorMonitoring() {
                   name={`${key} - ${cowNames[key]}`}
                   stroke={color}
                   strokeWidth={2}
+                  strokeOpacity={dimmedCows.has(key) ? 0.2 : 1}
                   dot={false}
                   activeDot={{ r: 5, strokeWidth: 0 }}
                   connectNulls
+                  onClick={() => toggleCowDim(key)}
+                  style={{ cursor: "pointer" }}
                 />
               ))
             }
@@ -395,13 +399,13 @@ export default function SensorMonitoring() {
           {Object.entries(cowNames).map(([key, name]) => (
             <button
               key={key}
-              onClick={() => toggleCow(key)}
+              onClick={() => toggleCowDim(key)}
               className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
-                selected.includes(key)
-                  ? "border-transparent text-white font-medium"
-                  : "border-stone-300 dark:border-stone-600 text-stone-400 bg-transparent"
+                dimmedCows.has(key)
+                  ? "border-stone-300 dark:border-stone-600 text-stone-400 bg-stone-100 dark:bg-stone-800 opacity-50"
+                  : "border-transparent text-white font-medium"
               }`}
-              style={selected.includes(key) ? { backgroundColor: cowColors[key] } : {}}>
+              style={!dimmedCows.has(key) ? { backgroundColor: cowColors[key] } : {}}>
               <span>{name}</span>
             </button>
           ))}
