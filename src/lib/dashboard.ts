@@ -1,4 +1,7 @@
-import type { sapi_status_hidup } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+
+type SapiModel = Prisma.sapiGetPayload<{}>;
+type SapiStatusHidupDinamis = SapiModel["status_hidup"];
 
 export type DashboardAlert = {
   id: string;
@@ -13,7 +16,7 @@ export type DashboardCattleRow = {
   idsapi: number;
   jenis_sapi: string;
   jenis_kelamin: string;
-  status_hidup: sapi_status_hidup;
+  status_hidup: SapiStatusHidupDinamis; 
   reproduksi: { tanggal_ib: Date; nama_pejantan: string; keterangan: string | null } | null;
   bb_akhir: number | null;
   periksaUpdate: string;
@@ -63,7 +66,7 @@ export function formatRelativeTime(date: Date): string {
 }
 
 export function healthToAlertType(
-  status: sapi_status_hidup
+  status: SapiStatusHidupDinamis
 ): DashboardAlert["type"] {
   if (status === "Sakit") return "warning";
   if (status === "Mati") return "danger";
