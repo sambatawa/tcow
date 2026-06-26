@@ -1,4 +1,4 @@
-import type { sapi, riwayatreproduksi, informasi_fisik, sapi_status_hidup } from "@prisma/client";
+import type { riwayatreproduksi, sapi_status_hidup } from "@prisma/client";
 
 export type DashboardAlert = {
   id: string;
