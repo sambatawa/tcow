@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import type { PenggunaPublic } from "@/lib/pengguna";
-import { FaUser as UserIcon, FaEnvelope, FaMapMarkerAlt, FaBuilding, FaShieldAlt, FaKey, FaSave, FaCamera, FaEdit, FaTimes, FaExclamationTriangle, FaExclamationCircle } from "react-icons/fa";
+import { FaUser as UserIcon, FaEnvelope, FaMapMarkerAlt, FaBuilding, FaShieldAlt, FaKey, FaSave, FaCamera, FaEdit, FaTimes, FaExclamationTriangle, FaExclamationCircle, FaBell, FaDownload, FaTrash, FaFilter, FaHistory } from "react-icons/fa";
 import { toast } from "sonner";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { useSensors } from "@/hooks/useSensors";
+import { fetchDataSensorFromRtdb, extractHealthAlerts, type HealthAlert } from "@/lib/firebase-rtdb";
 
-type TabId = "profile" | "security" | "farm";
+type TabId = "profile" | "security" | "farm" | "notifications";
 
 type ProfileForm = {
   name: string;
@@ -54,6 +56,12 @@ export default function SettingsPage() {
   });
 
   const [farmName, setFarmName] = useState("Smart Dairy Farm Jawa Barat");
+
+  // Notification history state
+  const [notifications, setNotifications] = useState<HealthAlert[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [filterType, setFilterType] = useState<"all" | "danger" | "warning">("all");
+  const { cowNames: sensorCowNames, cowEartags: sensorCowEartags } = useSensors(10000);
 
   const syncFormFromProfile = useCallback((p: NonNullable<typeof profile>) => {
     setFormData((prev) => ({
@@ -115,6 +123,54 @@ export default function SettingsPage() {
       cancelled = true;
     };
   }, [user?.uid, user?.email]);
+
+  // Fetch notification history
+  useEffect(() => {
+    if (activeTab !== "notifications") return;
+
+    let cancelled = false;
+    setNotificationsLoading(true);
+
+    (async () => {
+      try {
+        const raw = await fetchDataSensorFromRtdb();
+        if (cancelled || !raw) return;
+
+        const cowNames = sensorCowNames ?? {};
+        const cowEartags = sensorCowEartags ?? {};
+
+        const cattleNames = new Map<number, string>();
+        Object.entries(cowNames).forEach(([key, name]) => {
+          const match = key.match(/\d+/);
+          if (match) cattleNames.set(parseInt(match[0], 10), name);
+        });
+
+        const cattleEartags = new Map<number, string>();
+        Object.entries(cowEartags).forEach(([key, eartag]) => {
+          const match = key.match(/\d+/);
+          if (match) cattleEartags.set(parseInt(match[0], 10), eartag);
+        });
+
+        const alerts = extractHealthAlerts(raw, cattleNames, cattleEartags);
+        if (!cancelled) {
+          setNotifications(alerts.sort((a, b) => {
+            // Sort by time, newest first
+            const timeA = new Date(a.time).getTime() || 0;
+            const timeB = new Date(b.time).getTime() || 0;
+            return timeB - timeA;
+          }));
+        }
+      } catch {
+        // Silent fail for notifications
+      } finally {
+        if (!cancelled) setNotificationsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, sensorCowNames, sensorCowEartags]);
 
   useEffect(() => {
     return () => {
@@ -244,32 +300,61 @@ export default function SettingsPage() {
   const tabs: { id: TabId; label: string; icon: typeof UserIcon }[] = [
     { id: "profile", label: "Profil", icon: UserIcon },
     { id: "security", label: "Keamanan", icon: FaShieldAlt },
+    { id: "notifications", label: "Riwayat Notifikasi", icon: FaBell },
     ...(isTeknisi ? [{ id: "farm" as const, label: "Peternakan", icon: FaBuilding }] : []),
   ];
+
+  const exportNotifications = () => {
+    const filtered = filterType === "all" ? notifications : notifications.filter(n => n.type === filterType);
+
+    if (filtered.length === 0) {
+      toast.error("Tidak ada notifikasi untuk diekspor");
+      return;
+    }
+
+    const csvContent = [
+      ["Waktu", "Tipe", "Nama Sapi", "Eartag", "Suhu (°C)", "Status Kesehatan", "Pesan"],
+      ...filtered.map((n) => [
+        n.time,
+        n.type === "danger" ? "Darurat" : "Peringatan",
+        n.cattleName,
+        n.eartag,
+        n.temperature.toFixed(1),
+        n.healthStatus,
+        n.message,
+      ]),
+    ].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+
+    const bom = "~";
+    const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `riwayat_notifikasi_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    toast.success(`${filtered.length} notifikasi berhasil diekspor`);
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    toast.success("Riwayat notifikasi telah dibersihkan");
+  };
 
   const tabBtnClass = (id: TabId) =>
     `flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
       activeTab === id
-        ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
+        ? "border-[#54cd19] text-[#54cd19] dark:text-[#889063]"
         : "border-transparent text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300"
     }`;
 
   return (
     <div className="p-6 max-w-9xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-2">
           Pengaturan
         </h1>
-        <p className="text-stone-600 dark:text-stone-400">
+        <p className="text-stone-600 dark:text-stone-400 gap-5">
           Kelola informasi akun Anda
         </p>
-      </div>
-
-      <div className="mb-6">
-        <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-sm font-medium">
-          <FaShieldAlt className="w-4 h-4" />
-          {roleLabel}
-        </span>
       </div>
 
       <div className="border-b border-stone-200 dark:border-stone-700 mb-6 overflow-x-auto">
@@ -302,26 +387,24 @@ export default function SettingsPage() {
                 <button
                   onClick={() => setIsEditing(true)}
                   disabled={!user?.uid}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shrink-0 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#54cd19] text-white rounded-full hover:bg-[#3e9413] transition-colors shrink-0 disabled:opacity-50"
                 >
-                  <FaEdit className="w-4 h-4" />
-                  Edit Profil
+                  <FaEdit className="w-3 h-3" />
+                  <span className="hidden lg:block"> Edit Profil </span>
                 </button>
               ) : (
                 <div className="flex gap-2 shrink-0">
                   <button
                     onClick={handleCancelEdit}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors"
-                  >
-                    <FaTimes className="w-4 h-4" />
+                    className="flex items-center gap-2 px-4 py-2 bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-full hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors">
+                    <FaTimes className="w-3 h-3" />
                     Batal
                   </button>
                   <button
                     onClick={handleSaveProfile}
                     disabled={isLoading}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                  >
-                    <FaSave className="w-4 h-4" />
+                    className="flex items-center gap-2 px-4 py-2 bg-[#54cd19] text-white rounded-full hover:bg-[#3e9413] transition-colors disabled:opacity-50">
+                    <FaSave className="w-3 h-3" />
                     {isLoading ? "Menyimpan..." : "Simpan"}
                   </button>
                 </div>
@@ -345,13 +428,13 @@ export default function SettingsPage() {
                       <img
                         src={imagePreview || formData.image}
                         alt={formData.name}
-                        className="w-24 h-24 rounded-full object-cover border-2 border-emerald-500"
+                        className="w-24 h-24 rounded-full object-cover border-2 border-[#54cd19]"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
                         }}
                       />
                     ) : (
-                      <div className="w-24 h-24 bg-emerald-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                      <div className="w-24 h-24 bg-[#54cd19] rounded-full flex items-center justify-center text-white text-2xl font-bold">
                         {formData.name?.charAt(0) || "U"}
                       </div>
                     )}
@@ -359,7 +442,7 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white hover:bg-emerald-700 transition-colors"
+                        className="absolute bottom-0 right-0 w-8 h-8 bg-[#54cd19] rounded-full flex items-center justify-center text-white hover:bg-[#3e9413] transition-colors"
                         title="Unggah foto JPG"
                       >
                         <FaCamera className="w-4 h-4" />
@@ -390,7 +473,7 @@ export default function SettingsPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-[#54cd19] focus:border-[#54cd19]"
                     />
                   </div>
                   <div>
@@ -421,7 +504,7 @@ export default function SettingsPage() {
                         disabled={!isEditing}
                         rows={2}
                         placeholder="Alamat lengkap"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                        className="w-full pl-10 pr-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-[#54cd19] focus:border-[#54cd19] resize-none"
                       />
                     </div>
                   </div>
@@ -453,7 +536,7 @@ export default function SettingsPage() {
                       name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-[#54cd19]"
                     />
                   </div>
                   <div>
@@ -465,7 +548,7 @@ export default function SettingsPage() {
                       name="newPassword"
                       value={formData.newPassword}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-[#54cd19]"
                     />
                   </div>
                   <div>
@@ -477,7 +560,7 @@ export default function SettingsPage() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-[#54cd19]"
                     />
                   </div>
                   <button
@@ -487,26 +570,11 @@ export default function SettingsPage() {
                       !formData.currentPassword ||
                       !formData.newPassword
                     }
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#54cd19] text-white rounded-full hover:bg-[#3e9413] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <FaKey className="w-4 h-4" />
+                    <FaKey className="w-3 h-3" />
                     {isLoading ? "Mengubah..." : "Ubah Password"}
                   </button>
-                </div>
-              </div>
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <FaExclamationCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                      Tips Keamanan
-                    </h4>
-                    <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                      <li>Gunakan password yang kuat dan unik</li>
-                      <li>Jangan bagikan password Anda kepada siapa pun</li>
-                      <li>Ganti password secara berkala</li>
-                    </ul>
-                  </div>
                 </div>
               </div>
             </div>
@@ -531,7 +599,7 @@ export default function SettingsPage() {
                     value={farmName}
                     onChange={(e) => setFarmName(e.target.value)}
                     disabled={!isEditing}
-                    className="w-full pl-10 pr-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full pl-10 pr-4 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-[#54cd19] focus:border-[#54cd19]"
                   />
                 </div>
               </div>
@@ -567,7 +635,7 @@ export default function SettingsPage() {
                   <p className="text-sm text-stone-600 dark:text-stone-400 mb-1">
                     Sapi Sehat
                   </p>
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  <p className="text-2xl font-bold text-[#54cd19] dark:text-[#889063]">
                     42
                   </p>
                 </div>
@@ -581,6 +649,163 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "notifications" && (
+          <div className="p-6">
+            <div className="flex items-start justify-between mb-6">
+              <SectionHeader
+                title="Riwayat Notifikasi"
+                description="Log notifikasi kesehatan sapi dari sensor"
+              />
+              {notifications.length > 0 && (
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={exportNotifications}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#54cd19] text-white rounded-lg hover:bg-[#3e9413] transition-colors"
+                  >
+                    <FaDownload className="w-4 h-4" />
+                    Ekspor CSV
+                  </button>
+                  <button
+                    onClick={clearNotifications}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                  >
+                    <FaTrash className="w-4 h-4" />
+                    Bersihkan
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {notifications.length > 0 && (
+              <div className="flex items-center gap-3 mb-4">
+                <FaFilter className="w-4 h-4 text-stone-400" />
+                <div className="flex gap-2">
+                  {(["all", "danger", "warning"] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setFilterType(type)}
+                      className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                        filterType === type
+                          ? type === "all"
+                            ? "bg-[#54cd19] text-white"
+                            : type === "danger"
+                              ? "bg-red-600 text-white"
+                              : "bg-yellow-500 text-white"
+                          : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700"
+                      }`}
+                    >
+                      {type === "all" ? "Semua" : type === "danger" ? "Darurat" : "Peringatan"}
+                      {type !== "all" && (
+                        <span className="ml-1 font-semibold">
+                          ({notifications.filter(n => n.type === type).length})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {notificationsLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin w-8 h-8 border-4 border-[#54cd19] border-t-transparent rounded-full" />
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-4">
+                  <FaBell className="w-8 h-8 text-stone-400" />
+                </div>
+                <p className="text-stone-500 dark:text-stone-400 mb-1">
+                  Tidak ada notifikasi
+                </p>
+                <p className="text-sm text-stone-400">
+                  Notifikasi kesehatan akan muncul di sini
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(filterType === "all" ? notifications : notifications.filter(n => n.type === filterType)).map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`flex gap-4 p-4 rounded-xl border ${
+                      notification.type === "danger"
+                        ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                        : "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+                    }`}
+                  >
+                    <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                      notification.type === "danger"
+                        ? "bg-red-100 dark:bg-red-900/50"
+                        : "bg-yellow-100 dark:bg-yellow-900/50"
+                    }`}>
+                      {notification.type === "danger" ? (
+                        <FaExclamationTriangle className={`w-5 h-5 text-red-600 dark:text-red-400`} />
+                      ) : (
+                        <FaExclamationCircle className={`w-5 h-5 text-yellow-600 dark:text-yellow-400`} />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-medium text-stone-900 dark:text-stone-100">
+                          {notification.cattleName}
+                        </h4>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          notification.type === "danger"
+                            ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300"
+                            : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300"
+                        }`}>
+                          {notification.type === "danger" ? "Darurat" : "Peringatan"}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 bg-stone-200 dark:bg-stone-700 rounded-full text-stone-600 dark:text-stone-400">
+                          {notification.eartag}
+                        </span>
+                      </div>
+                      <p className="text-sm text-stone-600 dark:text-stone-300 mt-1">
+                        {notification.message}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-stone-500 dark:text-stone-400">
+                        <span className="flex items-center gap-1">
+                          <FaHistory className="w-3 h-3" />
+                          {notification.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FaExclamationCircle className="w-3 h-3" />
+                          Suhu: {notification.temperature.toFixed(1)}°C
+                        </span>
+                        <span className={`px-2 py-0.5 rounded ${
+                          notification.healthStatus === "Critical"
+                            ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300"
+                            : "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300"
+                        }`}>
+                          {notification.healthStatus}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+                      className="shrink-0 p-2 text-stone-400 hover:text-red-500 transition-colors"
+                      title="Hapus notifikasi"
+                    >
+                      <FaTrash className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {notifications.length > 0 && (
+              <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Total: <span className="font-medium text-stone-700 dark:text-stone-300">{notifications.length}</span> notifikasi
+                  {filterType !== "all" && (
+                    <span> ({notifications.filter(n => n.type === filterType).length} {filterType === "danger" ? "darurat" : "peringatan"})</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

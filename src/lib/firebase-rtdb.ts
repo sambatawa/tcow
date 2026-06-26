@@ -665,7 +665,6 @@ export async function fetchDataSensorFromRtdbDetailed(): Promise<RtdbFetchResult
       if (!res.ok) {
         const body = await res.text().catch(() => "");
         lastError = `[RTDB] ${path} → HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`;
-        console.warn(lastError);
         continue;
       }
 
@@ -674,14 +673,12 @@ export async function fetchDataSensorFromRtdbDetailed(): Promise<RtdbFetchResult
 
       if (typeof data === "object" && data !== null && "error" in data) {
         lastError = `[RTDB] ${path} → ${(data as { error: string }).error}`;
-        console.warn(lastError);
         continue;
       }
 
       return { data, error: null, path };
     } catch (error) {
       lastError = `[RTDB] ${path} gagal: ${error instanceof Error ? error.message : String(error)}`;
-      console.warn(lastError);
     }
   }
 

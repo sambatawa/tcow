@@ -136,8 +136,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json(serializePengguna(updated));
     return setAuthCookie(response, updated);
-  } catch (error) {
-    console.error("[POST /api/auth/google]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal masuk dengan Google" },
       { status: 500 }

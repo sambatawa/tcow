@@ -24,8 +24,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     try {
       const raw = await fetchDataSensorFromRtdb();
       sensorData = raw ? buildCattleSensorData(raw, cattle.idsapi) : null;
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // silent
     }
 
     return NextResponse.json({
@@ -41,8 +41,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       ),
       sensorData,
     });
-  } catch (error) {
-    console.error("[GET /api/sapi/[id]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memuat detail sapi" },
       { status: 500 }
@@ -67,8 +66,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ cattle });
-  } catch (error) {
-    console.error("[PATCH /api/sapi/[id]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memperbarui data sapi" },
       { status: 500 }
@@ -91,8 +89,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[DELETE /api/sapi/[id]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal menghapus data sapi" },
       { status: 500 }

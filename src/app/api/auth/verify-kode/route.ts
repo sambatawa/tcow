@@ -28,8 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ valid: true });
-  } catch (error) {
-    console.error("[POST /api/auth/verify-kode]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memverifikasi kode" },
       { status: 500 }

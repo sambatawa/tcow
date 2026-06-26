@@ -57,24 +57,25 @@ export async function POST(request: NextRequest) {
       pengguna.email,
       pengguna.role
     );
+
     const userData = serializePengguna(updated);
     const response = NextResponse.json(userData, { status: 200 });
 
-    response.cookies.set({
+    // Set cookie with proper settings
+    const cookieOptions = {
       name: AUTH_COOKIE_OPTIONS.name,
       value: token,
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production", // Only secure in production
+      sameSite: "lax" as const,
       path: "/",
-      maxAge: 24 * 60 * 60,
-    });
+      maxAge: 60 * 60 * 24, // 24 hours
+    };
 
-    console.log("[LOGIN] Cookie set, response headers:", response.headers.get("set-cookie"));
+    response.cookies.set(cookieOptions);
 
     return response;
-  } catch (error) {
-    console.error("[POST /api/auth/login]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal masuk" },
       { status: 500 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
-import { FaThermometerHalf, FaBroadcastTower, FaBatteryHalf, FaMapMarkerAlt, FaExclamationTriangle, FaSync, FaArrowUp, FaArrowDown, FaMinus, FaInfoCircle, FaSpinner, FaEye} from "react-icons/fa";
+import { FaThermometerHalf, FaBroadcastTower, FaBatteryHalf, FaMapMarkerAlt, FaExclamationTriangle, FaArrowUp, FaArrowDown, FaMinus, FaInfoCircle, FaSpinner, FaEye } from "react-icons/fa";
 import { toast } from "sonner";
 import { useSensors } from "@/hooks/useSensors";
 import { getChartColor } from "@/lib/dashboard";
@@ -22,11 +22,11 @@ function tempStatus(t: number): { label: string; color: string; bg: string; dot:
     return { label: "Demam", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", dot: "bg-red-500" };
   if (t < suhuRendah)
     return { label: "Rendah", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20", dot: "bg-blue-500" };
-  return { label: "Normal", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", dot: "bg-emerald-500" };
+  return { label: "Normal", color: "text-[#54cd19] dark:text-[#889063]", bg: "bg-[#e5d7c4]/30 dark:bg-[#354024]/30", dot: "bg-[#54cd19]/30" };
 }
 
 const statusStyle: Record<string, string> = {
-  Aktif: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+  Aktif: "bg-[#e5d7c4]/30 dark:bg-[#354024]/30 text-[#54cd19] dark:text-[#889063]",
   "Baterai Rendah": "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
   Error: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
 };
@@ -69,13 +69,13 @@ function CustomTooltip({
 }
 
 function BatteryBar({ level }: { level: number }) {
-  const color = level >= 60 ? "bg-emerald-500" : level >= 30 ? "bg-amber-500" : "bg-red-500";
+  const color = level >= 60 ? "bg-[#54cd19]/30" : level >= 30 ? "bg-amber-500" : "bg-red-500";
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full`} style={{ width: `${level}%` }} />
       </div>
-      <span className={`text-xs font-medium ${level >= 60 ? "text-emerald-600 dark:text-emerald-400" : level >= 30 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
+      <span className={`text-xs font-medium ${level >= 60 ? "text-[#54cd19] dark:text-[#889063]" : level >= 30 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
         {level}%
       </span>
     </div>
@@ -108,16 +108,16 @@ function TrendIcon({
   }
   const diff = last - prev;
   if (diff > 0.3) return <FaArrowUp className="w-4 h-4 text-red-400" />;
-  if (diff < -0.3) return <FaArrowDown className="w-4 h-4 text-emerald-500" />;
+  if (diff < -0.3) return <FaArrowDown className="w-4 h-4 text-[#54cd19]" />;
   return <FaMinus className="w-4 h-4 text-stone-400" />;
 }
 
 export default function SensorMonitoring() {
   const { isReadOnly } = useReadOnly();
   const { sensors, tempHistory: history, cowNames, loading, error, refresh, updatedAt, source} = useSensors(30000);
-  const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
@@ -139,12 +139,6 @@ export default function SensorMonitoring() {
   const lastUpdate = updatedAt
     ? new Date(updatedAt).toLocaleTimeString("id-ID")
     : null;
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refresh();
-    setRefreshing(false);
-  };
 
   if (loading && sensors.length === 0) {
     return (
@@ -199,14 +193,10 @@ export default function SensorMonitoring() {
             </div>
           )}
         </div>
-        {!isReadOnly && (
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 border border-stone-300 dark:border-stone-600 hover:border-emerald-500 text-stone-700 dark:text-stone-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
-            <FaSync className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            <span className="hidden lg:block">Refresh</span>
-          </button>
+        {lastUpdate && (
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-stone-400">
+            <span>Update: {lastUpdate}</span>
+          </div>
         )}
       </div>
 
@@ -307,22 +297,22 @@ export default function SensorMonitoring() {
                 {!isOffline && (
                   <div>
                     <div className="flex justify-between text-[10px] text-stone-400 mb-1">
-                      <span>37.5°C</span>
-                      <span className="text-emerald-500">Normal {suhuRendah}–{suhuTinggi}°C</span>
-                      <span className="text-red-400">41.0°C</span>
+                      <span>20°C</span>
+                      <span className="text-[#54cd19]">Normal {suhuRendah}–{suhuTinggi}°C</span>
+                      <span>50°C</span>
                     </div>
                     <div className="relative h-2 bg-stone-100 dark:bg-stone-700 rounded-full overflow-hidden">
                       <div
-                        className="absolute top-0 h-full bg-emerald-100 dark:bg-emerald-900/30"
+                        className="absolute top-0 h-full bg-[#54cd19]/30 dark:bg-[#54cd19]/20"
                         style={{
-                          left: `${((suhuRendah - 37.5) / 3.5) * 100}%`,
-                          width: `${((suhuTinggi - suhuRendah) / 3.5) * 100}%`,
+                          left: `${((suhuRendah - 20) / 30) * 100}%`,
+                          width: `${((suhuTinggi - suhuRendah) / 30) * 100}%`,
                         }}
                       />
                       <div
                         className="absolute top-0 h-full w-1 rounded-full transition-all"
                         style={{
-                          left: `${Math.min(100, Math.max(0, ((sensor.temperature - 37.5) / 3.5) * 100))}%`,
+                          left: `${Math.min(100, Math.max(0, ((sensor.temperature - 20) / 30) * 100))}%`,
                           backgroundColor: cowColors[cowKey],
                         }}
                       />
@@ -361,7 +351,7 @@ export default function SensorMonitoring() {
               axisLine={{ stroke: "#e7e5e4" }}
             />
             <YAxis
-              domain={[37.5, 41.0]}
+              domain={[20, 50]}
               tick={{ fontSize: 11, fill: "#a8a29e" }}
               tickLine={false}
               axisLine={false}
@@ -390,34 +380,33 @@ export default function SensorMonitoring() {
                   key={`cow-line-${key}`}
                   type="monotone"
                   dataKey={key}
-                  name={cowNames[key]}
+                  name={`${key} - ${cowNames[key]}`}
                   stroke={color}
                   strokeWidth={2}
                   dot={false}
                   activeDot={{ r: 5, strokeWidth: 0 }}
+                  connectNulls
                 />
               ))
             }
           </LineChart>
         </ResponsiveContainer>
         )}
-        {!isReadOnly && (
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(cowNames).map(([key, name]) => (
-              <button
-                key={key}
-                onClick={() => toggleCow(key)}
-                className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
-                  selected.includes(key)
-                    ? "border-transparent text-white font-medium"
-                    : "border-stone-300 dark:border-stone-600 text-stone-400 bg-transparent"
-                }`}
-                style={selected.includes(key) ? { backgroundColor: cowColors[key] } : {}}>
-                {name}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {Object.entries(cowNames).map(([key, name]) => (
+            <button
+              key={key}
+              onClick={() => toggleCow(key)}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
+                selected.includes(key)
+                  ? "border-transparent text-white font-medium"
+                  : "border-stone-300 dark:border-stone-600 text-stone-400 bg-transparent"
+              }`}
+              style={selected.includes(key) ? { backgroundColor: cowColors[key] } : {}}>
+              <span className="font-mono">{key}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-100 dark:border-stone-800 overflow-hidden">
@@ -453,7 +442,7 @@ export default function SensorMonitoring() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <FaThermometerHalf className="w-3.5 h-3.5 text-stone-400" />
-                        <span className={`font-semibold ${s.status === "Error" ? "text-stone-400" : s.temperature > suhuTinggi ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                        <span className={`font-semibold ${s.status === "Error" ? "text-stone-400" : s.temperature > suhuTinggi ? "text-red-600 dark:text-red-400" : "text-[#54cd19] dark:text-[#889063]"}`}>
                           {s.temperature.toFixed(1)}°C
                         </span>
                       </div>
@@ -466,7 +455,7 @@ export default function SensorMonitoring() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-medium ${s.battery >= 60 ? "text-emerald-600 dark:text-emerald-400" : s.battery >= 30 ? "text-amber-600 dark:text-amber-400" : "text-red-500"}`}>
+                      <span className={`text-xs font-medium ${s.battery >= 60 ? "text-[#54cd19] dark:text-[#889063]" : s.battery >= 30 ? "text-amber-600 dark:text-amber-400" : "text-red-500"}`}>
                         {s.battery > 0 ? `${s.battery}%` : "Habis"}
                       </span>
                     </td>

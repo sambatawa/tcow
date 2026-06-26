@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
     const refreshed = await refreshVerificationCycle(record);
     return NextResponse.json(buildVerificationStatus(refreshed));
-  } catch (error) {
-    console.error("[GET /api/auth/verification-status]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memuat status verifikasi" },
       { status: 500 }

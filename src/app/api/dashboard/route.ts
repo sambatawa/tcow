@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     let sick = 0;
     let dead = 0;
 
-    const cattle: DashboardCattleRow[] = sapiList.map((s) => {
+    const cattle: DashboardCattleRow[] = sapiList.map((s: (typeof sapiList)[number]) => {
       const fisik = latestFisik.get(s.idsapi);
       const repro = latestRepro.get(s.idsapi);
       const status = s.status_hidup;
@@ -152,7 +152,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("[GET /api/dashboard]", error);
     return NextResponse.json(
       { error: "Gagal memuat data dashboard" },
       { status: 500 }

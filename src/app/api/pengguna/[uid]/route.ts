@@ -80,8 +80,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     });
 
     return NextResponse.json(initPengguna(pengguna));
-  } catch (error) {
-    console.error("[PATCH /api/pengguna]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memperbarui profil" },
       { status: 500 }

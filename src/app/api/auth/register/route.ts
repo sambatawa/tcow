@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
       message: "Kode verifikasi telah dikirim ke email Anda.",
     });
   } catch (error) {
-    console.error("[POST /api/auth/register]", error);
     return jsonError(
       error instanceof Error ? error.message : "Gagal mengirim kode verifikasi",
       500

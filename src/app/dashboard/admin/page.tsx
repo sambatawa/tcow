@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaUsers, FaPlus, FaEdit, FaTrash, FaSearch, FaDownload, FaSpinner, FaTimes, FaCheck, FaUserPlus } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -53,23 +53,32 @@ export default function AdminPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const res = await fetch("/api/pengguna", { credentials: "include" });
       if (res.ok) {
         const json = await res.json();
         setUsersData(json.usersData ?? []);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch {
+      // Silent fail
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+
+    // Auto-refresh setiap 30 detik
+    const refreshInterval = setInterval(() => {
+      if (!showModal) {
+        fetchUsers();
+      }
+    }, 30000);
+
+    return () => clearInterval(refreshInterval);
+  }, [fetchUsers, showModal]);
 
   const filtered = usersData.filter(
     (u) =>

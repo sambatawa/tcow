@@ -3,7 +3,6 @@ export async function sendTelegramNotification(message: string) {
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   if (!token || !chatId) {
-    console.error("Kredensial Telegram belum diset di .env");
     return;
   }
 
@@ -21,9 +20,7 @@ export async function sendTelegramNotification(message: string) {
     });
 
     if (!response.ok) {
-      console.error("Gagal mengirim notifikasi Telegram:", await response.text());
     }
-  } catch (error) {
-    console.error("Error saat fetch API Telegram:", error);
+  } catch {
   }
 }

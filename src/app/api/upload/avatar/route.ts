@@ -52,8 +52,7 @@ export async function POST(request: NextRequest) {
 
     const url = `/uploads/pengguna/${filename}`;
     return NextResponse.json({ url });
-  } catch (error) {
-    console.error("[POST /api/upload/avatar]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal mengunggah foto" },
       { status: 500 }

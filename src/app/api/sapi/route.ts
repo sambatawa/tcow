@@ -21,8 +21,7 @@ export async function GET(request: Request) {
 
     const data = await buildSapiBundle();
     return NextResponse.json(data);
-  } catch (error) {
-    console.error("[GET /api/sapi]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memuat data sapi" },
       { status: 500 }
@@ -50,7 +49,6 @@ export async function POST(request: Request) {
     const cattle = await createCattle(body);
     return NextResponse.json({ cattle }, { status: 201 });
   } catch (error) {
-    console.error("[POST /api/sapi]", error);
     const message =
       error instanceof Error ? error.message : "Gagal menambahkan sapi";
     return NextResponse.json({ error: message }, { status: 500 });

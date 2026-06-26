@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaWrench, FaPlus, FaClock, FaCheckCircle, FaExclamationTriangle, FaUser, FaDownload, FaSpinner } from "react-icons/fa";
 import { toast } from "sonner";
 import Modal from "@/components/ui/Modal";
@@ -9,13 +9,13 @@ import { useAuth } from "@/context/AuthContext";
 const priorityStyle: Record<string, string> = {
   Tinggi: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-700",
   Sedang: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-700",
-  Rendah: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700",
+  Rendah: "bg-[#e5d7c4]/30 dark:bg-[#354024]/30 text-[#354024] dark:text-[#889063] border-[#e5d7c4] dark:border-[#354024]",
 };
 
 const statusStyle: Record<string, string> = {
   Menunggu: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
   "Dalam Proses": "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
-  Selesai: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+  Selesai: "bg-[#e5d7c4]/30 dark:bg-[#354024]/30 text-[#354024] dark:text-[#889063]",
 };
 
 const statusIcons: Record<string, React.ElementType> = {
@@ -43,19 +43,31 @@ export default function MaintenancePage() {
   const [filter, setFilter] = useState("Semua");
   const filters = ["Semua", "Dalam Proses", "Selesai"];
   const [showAddModal, setShowAddModal] = useState(false);
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/maintenance", { credentials: "include" });
-        if (res.ok) {
-          const json = (await res.json()) as { maintenanceData: MaintenanceItem[] };
-          setMaintenanceData(json.maintenanceData ?? []);
-        }
-      } finally {
-        setLoading(false);
+
+  const fetchMaintenance = useCallback(async () => {
+    try {
+      const res = await fetch("/api/maintenance", { credentials: "include" });
+      if (res.ok) {
+        const json = (await res.json()) as { maintenanceData: MaintenanceItem[] };
+        setMaintenanceData(json.maintenanceData ?? []);
       }
-    })();
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchMaintenance();
+
+    // Auto-refresh setiap 30 detik
+    const refreshInterval = setInterval(() => {
+      if (!showAddModal) {
+        fetchMaintenance();
+      }
+    }, 30000);
+
+    return () => clearInterval(refreshInterval);
+  }, [fetchMaintenance, showAddModal]);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -125,14 +137,14 @@ export default function MaintenancePage() {
           </p>
         </div>
         <div className="flex gap-3">
-          {user?.role && user.role !== "Peternak" && (
-            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
-              <FaPlus className="w-4 h-4" /> <span className="hidden lg:block">Tambah Perawatan </span>
-            </button>
-          )}
           <button onClick={handleExport} className="flex items-center gap-2 border border-stone-300 dark:border-stone-600 rounded-full bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors px-4 py-2">
             <FaDownload className="w-3 h-3" /> <span className="hidden lg:block">Ekspor Data</span>
           </button>
+          {user?.role && user.role !== "Peternak" && (
+            <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 bg-[#54cd19] hover:bg-[#3e9413] text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">
+              <FaPlus className="w-4 h-4" /> <span className="hidden lg:block">Tambah Perawatan </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -140,7 +152,7 @@ export default function MaintenancePage() {
         {[
           { label: "Menunggu", value: pendingCount, icon: FaExclamationTriangle, iconBg:"bg-red-100 dark:bg-red-900/30", textColor:"text-red-600 dark:text-red-400" },
           { label: "Sedang Diperbaiki", value: inProgressCount, icon: FaClock, iconBg:"bg-amber-100 dark:bg-amber-900/30", textColor:"text-amber-600 dark:text-amber-400" },
-          { label: "Selesai", value: doneCount, icon: FaCheckCircle, iconBg: "bg-emerald-100 dark:bg-emerald-900/30", textColor:"text-emerald-600 dark:text-emerald-400" },
+          { label: "Selesai", value: doneCount, icon: FaCheckCircle, iconBg: "bg-[#e5d7c4]/30 dark:bg-[#354024]/30", textColor:"text-[#54cd19] dark:text-[#889063]" },
         ].map((s) => (
           <div key={s.label} className={`${s.iconBg} rounded-2xl border border-[#e5d7c4]/20 dark:border-[#354024]/30 p-5 transition-shadow`}>
             <div className="mt-4">
@@ -237,7 +249,7 @@ export default function MaintenancePage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">Tipe Perawatan</label>
-              <input type="text" required value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="Penggantian Baterai"/>
+              <input type="text" required value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-transparent" placeholder="Penggantian Baterai"/>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -245,7 +257,7 @@ export default function MaintenancePage() {
               <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">Prioritas</label>
               <select value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-transparent"
               >
                 <option value="Tinggi">Tinggi</option>
                 <option value="Sedang">Sedang</option>
@@ -259,7 +271,7 @@ export default function MaintenancePage() {
                 required
                 value={formData.sensorId}
                 onChange={(e) => setFormData({ ...formData, sensorId: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-transparent"
                 placeholder="Contoh: S001"
               />
             </div>
@@ -272,7 +284,7 @@ export default function MaintenancePage() {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-transparent"
                 max={today}
               />
             </div>
@@ -283,7 +295,7 @@ export default function MaintenancePage() {
                 required
                 value={formData.technician}
                 onChange={(e) => setFormData({ ...formData, technician: e.target.value })}
-                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-transparent"
                 placeholder="Contoh: Ahmad"
               />
             </div>
@@ -294,7 +306,7 @@ export default function MaintenancePage() {
               required
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#54cd19] focus:border-transparent"
               rows={3}
               placeholder="Deskripsi detail perawatan..."
             />
@@ -309,7 +321,7 @@ export default function MaintenancePage() {
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+              className="flex-1 px-4 py-2 bg-[#54cd19] hover:bg-[#3e9413] text-white rounded-lg transition-colors"
             >
               Simpan
             </button>

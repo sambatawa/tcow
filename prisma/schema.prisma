@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model informasi_fisik {
@@ -106,6 +107,24 @@ model verifikasi_email {
   @@index([email])
 }
 
+model notifikasi {
+  id_notifikasi   String            @id @map("id_notifikasi") @db.VarChar(36)
+  idsapi         String            @db.VarChar(50)
+  type           notification_type @default(warning)
+  title          String            @db.VarChar(255)
+  message        String            @db.Text
+  temperature    Float
+  healthStatus   String            @map("health_status") @db.VarChar(50)
+  isRead         Boolean           @map("is_read") @default(false)
+  isSentTelegram Boolean          @map("is_sent_telegram") @default(false)
+  alertTime      DateTime          @map("alert_time")
+
+  @@index([idsapi])
+  @@index([type])
+  @@index([isRead])
+  @@map("notifikasi")
+}
+
 enum riwayatmedis_jenis_tindakan {
   Obat_Cacing
   Vaksin_PMK
@@ -138,4 +157,10 @@ enum sapi_status_hidup {
   Sehat
   Sakit
   Mati
+}
+
+enum notification_type {
+  warning
+  info
+  danger
 }

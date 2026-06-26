@@ -44,8 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(serializePengguna(pengguna));
-  } catch (error) {
-    console.error("[GET /api/pengguna]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal mengambil data pengguna" },
       { status: 500 }
@@ -105,8 +104,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(serializePengguna(pengguna));
-  } catch (error) {
-    console.error("[POST /api/pengguna]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal menyimpan pengguna" },
       { status: 500 }
@@ -157,8 +155,7 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json(serializePengguna(pengguna));
-  } catch (error) {
-    console.error("[PUT /api/pengguna]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memperbarui pengguna" },
       { status: 500 }
@@ -201,8 +198,7 @@ export async function DELETE(request: NextRequest) {
     await prisma.pengguna.delete({ where: { uid } });
 
     return NextResponse.json({ message: "Pengguna berhasil dihapus" });
-  } catch (error) {
-    console.error("[DELETE /api/pengguna]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal menghapus pengguna" },
       { status: 500 }

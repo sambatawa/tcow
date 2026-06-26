@@ -33,7 +33,6 @@ export async function POST(_request: NextRequest) {
       message: `Cleanup: ${deletedStale.count} record lama dihapus, ${lockReleased.count} kunci dilepas.`,
     });
   } catch (error) {
-    console.error("[POST /api/auth/cleanup-expired]", error);
     return NextResponse.json(
       {
         error:

@@ -45,7 +45,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get("auth_token")?.value;
-  console.log("Path:", pathname, "Has token:", !!token);
 
   if (!token) {
     const response = NextResponse.json(
@@ -71,7 +70,6 @@ export async function middleware(request: NextRequest) {
 
     return addCorsHeaders(response, origin);
   } catch (error) {
-    console.log(error);
     const response = NextResponse.json(
       { error: "Invalid or expired token" },
       { status: 401 }

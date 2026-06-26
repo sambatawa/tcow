@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FaBalanceScale, FaChevronRight, FaArrowRight, FaHeartbeat, FaExclamationTriangle, FaExclamationCircle, FaInfoCircle, FaCheckCircle, FaDownload, FaSpinner } from "react-icons/fa";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { GiCow } from "react-icons/gi";
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend, ReferenceLine } from "recharts";
 import { toast } from "sonner";
 import { useSensors } from "@/hooks/useSensors";
 import { getChartColor, type DashboardData, type DashboardAlert } from "@/lib/dashboard";
@@ -142,15 +142,20 @@ export default function MainDashboard() {
       try {
         const raw = await fetchDataSensorFromRtdb();
         if (cancelled || !raw) return;
+
+        // Guard against undefined cowNames/cowEartags
+        const cowNames = sensorCowNames ?? {};
+        const cowEartags = sensorCowEartags ?? {};
+
         const cattleNames = new Map<number, string>();
-        Object.entries(sensorCowNames).forEach(([key, name]) => {
+        Object.entries(cowNames).forEach(([key, name]) => {
           const match = key.match(/\d+/);
           if (match) {
             cattleNames.set(parseInt(match[0], 10), name);
           }
         });
         const cattleEartags = new Map<number, string>();
-        Object.entries(sensorCowEartags).forEach(([key, eartag]) => {
+        Object.entries(cowEartags).forEach(([key, eartag]) => {
           const match = key.match(/\d+/);
           if (match) {
             cattleEartags.set(parseInt(match[0], 10), eartag);
@@ -159,8 +164,8 @@ export default function MainDashboard() {
 
         const alerts = extractHealthAlerts(raw, cattleNames, cattleEartags);
         if (!cancelled) setFirebaseAlerts(alerts);
-      } catch (e) {
-        console.warn("Gagal memuat alert dari Firebase:", e);
+      } catch {
+        // Silent fail for Firebase alerts
       }
     })();
     return () => {
@@ -219,6 +224,10 @@ export default function MainDashboard() {
   const chartSeriesKeys = sensorHistory.length > 0
     ? Object.keys(sensorHistory[0]).filter((key) => key !== "label")
     : [];
+
+  // Constants for temperature thresholds
+  const suhuRendah = 38.0;
+  const suhuTinggi = 39.5;
 
   return (
     <div className="p-6 space-y-6">
@@ -285,22 +294,59 @@ export default function MainDashboard() {
           </div>
 
           {sensorHistory.length > 0 && chartSeriesKeys.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={sensorHistory} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" strokeOpacity={0.5} />
-                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#a8a29e" }} tickLine={false} axisLine={{ stroke: "#e7e5e4" }}/>
-                <YAxis tick={{ fontSize: 10, fill: "#a8a29e" }} tickLine={false} axisLine={false} width={40} domain={[25, 45]} tickFormatter={(v) => `${v}C`}/>
-                <Tooltip formatter={(value, name) => [
-                    `${value}C`,
-                    sensorCowNames[name as string] || `Eartag ${name}`
-                  ]} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+            <div className="relative">
+              <div className="flex justify-between text-[10px] text-stone-400 mb-1 px-1">
+                <span>37.5°C</span>
+                <span className="text-[#54cd19]">Normal {suhuRendah}–{suhuTinggi}°C</span>
+                <span>41.0°C</span>
+              </div>
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={sensorHistory} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" strokeOpacity={0.5} />
+                  <XAxis 
+                    dataKey="label" 
+                    tick={{ fontSize: 10, fill: "#a8a29e" }} 
+                    tickLine={false} axisLine={{ stroke: "#e7e5e4" }}
+                  />
+                  <YAxis tick={{ fontSize: 10, fill: "#a8a29e" }} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    width={40} 
+                    domain={[20, 50]} 
+                    tickFormatter={(v) => `${v}°`}
+                  />
+                  <Tooltip formatter={(value, name) => [
+                      `${value}C`,
+                      sensorCowNames[name as string] || `Eartag ${name}`
+                    ]} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+                  <ReferenceLine
+                    y={suhuTinggi}
+                    stroke="#ef4444"
+                    strokeDasharray="4 3"
+                    strokeWidth={1.5}
+                    label={{ value: `Demam >${suhuTinggi}°C`, fill: "#ef4444", fontSize: 10, position: "insideTopRight" }}
+                  />
+                  <ReferenceLine
+                    y={suhuRendah}
+                    stroke="#10b981"
+                    strokeDasharray="4 3"
+                    strokeWidth={1.5}
+                    label={{ value: `Min Normal ${suhuRendah}°C`, fill: "#10b981", fontSize: 10, position: "insideBottomRight" }}
+                  />
+                  <ReferenceLine
+                    y={suhuRendah}
+                    stroke="#10b981"
+                    strokeDasharray="0"
+                    strokeWidth={0}
+                  />
 
-                {chartSeriesKeys.map((key, index) => (
-                  <Line key={key} type="monotone" dataKey={key} name={sensorCowNames[key] || key} stroke={getChartColor(index)} strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} connectNulls/>
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+                  {chartSeriesKeys.map((key, index) => (
+                    <Line key={key} type="monotone" dataKey={key} name={sensorCowNames[key] || key} stroke={getChartColor(index)} strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} connectNulls/>
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center text-stone-400">
               <FaSpinner className="w-6 h-6 animate-spin mb-2 text-[#54cd19]" />

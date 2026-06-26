@@ -76,7 +76,6 @@ export async function POST(request: NextRequest) {
       ...status,
     });
   } catch (error) {
-    console.error("[POST /api/auth/resend-verification]", error);
     return jsonError(
       error instanceof Error ? error.message : "Gagal mengirim ulang kode verifikasi",
       500

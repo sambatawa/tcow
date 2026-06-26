@@ -1,8 +1,8 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { FaArrowLeft, FaHeartbeat, FaStethoscope,FaSpinner, FaBatteryQuarter, FaThermometerHalf, FaPlus, FaTrash, FaEdit} from "react-icons/fa";
+import { useState, useEffect, useCallback } from "react";
+import { FaArrowLeft, FaHeartbeat, FaStethoscope, FaSpinner, FaBatteryQuarter, FaThermometerHalf, FaPlus, FaTrash, FaEdit } from "react-icons/fa";
 import { toast } from "sonner";
 import Modal from "@/components/ui/Modal";
 import { formatKandangLabel } from "@/lib/sapi";
@@ -104,27 +104,32 @@ export default function CattleProfilePage() {
     setActivities(detail.cattleActivityLog);
   };
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const detail = await fetchDetail(cattleId);
-        if (cancelled) return;
-        setCattle(detail.cattle);
-        setSensorData(detail.sensorData);
-        setMedicalRecords(detail.medicalHistory);
-        setActivities(detail.cattleActivityLog);
-      } catch {
-        if (!cancelled) setCattle(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  const fetchAllData = useCallback(async () => {
+    try {
+      const detail = await fetchDetail(cattleId);
+      setCattle(detail.cattle);
+      setSensorData(detail.sensorData);
+      setMedicalRecords(detail.medicalHistory);
+      setActivities(detail.cattleActivityLog);
+    } catch {
+      setCattle(null);
+    } finally {
+      setLoading(false);
+    }
   }, [cattleId]);
+
+  useEffect(() => {
+    fetchAllData();
+
+    // Auto-refresh setiap 30 detik
+    const refreshInterval = setInterval(() => {
+      if (!medicalModalMode && !activityModalMode && !deletingMedical && !deletingActivity) {
+        fetchAllData();
+      }
+    }, 30000);
+
+    return () => clearInterval(refreshInterval);
+  }, [fetchAllData, medicalModalMode, activityModalMode, deletingMedical, deletingActivity]);
 
   const openCreateMedical = () => {
     setMedicalModalMode("create");
@@ -549,7 +554,7 @@ export default function CattleProfilePage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={"text-xs px-2 py-0.5 rounded-full " + (
                       record.status === "Selesai"
-                        ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-[#e5d7c4]/30 dark:bg-[#354024]/30 text-[#54cd19] dark:text-[#889063]"
                         : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
                     )}>
                       {record.status}

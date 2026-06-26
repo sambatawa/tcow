@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { FaSpinner, FaExclamationTriangle, FaPlus, FaDownload, FaTrash, FaEye} from "react-icons/fa";
+import { FaSpinner, FaExclamationTriangle, FaPlus, FaDownload, FaTrash, FaEye } from "react-icons/fa";
 import { toast } from "sonner";
 import Modal from "@/components/ui/Modal";
 import type { CattleInput, CattleListItem } from "@/lib/sapi";
@@ -62,12 +62,18 @@ export default function CattleListPage() {
   const [deletingCattle, setDeletingCattle] = useState<CattleListItem | null>(null);
   const [form, setForm] = useState<CattleForm>(emptyForm);
 
-  const fetchCattle = async () => {
-    const res = await fetch("/api/sapi", { credentials: "include" });
-    if (!res.ok) throw new Error("Gagal memuat data sapi");
-    const json = (await res.json()) as { cattle: CattleListItem[] };
-    setCattle(json.cattle);
-  };
+  const fetchCattle = useCallback(async () => {
+    try {
+      const res = await fetch("/api/sapi", { credentials: "include" });
+      if (!res.ok) throw new Error("Gagal memuat data sapi");
+      const json = (await res.json()) as { cattle: CattleListItem[] };
+      setCattle(json.cattle);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,10 +90,18 @@ export default function CattleListPage() {
       }
     })();
 
+    // Auto-refresh setiap 30 detik
+    const refreshInterval = setInterval(() => {
+      if (!modalMode) {
+        fetchCattle();
+      }
+    }, 30000);
+
     return () => {
       cancelled = true;
+      clearInterval(refreshInterval);
     };
-  }, []);
+  }, [fetchCattle, modalMode]);
 
   const handleFormChange = (key: keyof CattleForm, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));

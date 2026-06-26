@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ maintenanceData });
   } catch (error) {
-    console.error("[GET /api/maintenance]", error);
     return NextResponse.json(
       { error: "Gagal memuat data maintenance" },
       { status: 500 }

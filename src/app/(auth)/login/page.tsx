@@ -30,6 +30,16 @@ export default function LoginPage() {
     if (!isValidEmailFormat(email)) return setError(MSG.emailInvalid);
 
     setLoading(true);
+
+    const success = await login(email, password);
+    if (!success) {
+      setError("Email atau password salah");
+      setLoading(false);
+      return;
+    }
+
+    toast.success("Berhasil masuk");
+    router.push("/dashboard");
   };
 
   return (

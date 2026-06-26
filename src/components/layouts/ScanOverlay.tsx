@@ -125,7 +125,6 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
       });
       nativeScanLoop(detector, videoElement, stream);
     } catch (err: any) {
-      console.error("Native scanner error:", err);
       if (err.name === "NotAllowedError") {
         setStatus("Izin ditolak");
       } else {
@@ -239,7 +238,7 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-white p-6 z-20">
             <FaExclamationTriangle className="w-10 h-10 text-amber-400 mb-3" />
             <p className="text-center text-sm">{error}</p>
-            <button onClick={handleReset} className="mt-4 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-full text-xs font-medium transition">
+            <button onClick={handleReset} className="mt-4 px-5 py-2 bg-[#54cd19] hover:bg-[#3e9413] rounded-full text-xs font-medium transition">
               Coba Lagi
             </button>
           </div>
@@ -269,7 +268,7 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
               <button onClick={handleReset} className="px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800 dark:hover:text-white transition">
                 Reset
               </button>
-              <button onClick={handleViewDetail} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition">
+              <button onClick={handleViewDetail} className="px-3 py-1.5 bg-[#54cd19] text-white rounded-lg text-xs font-medium hover:bg-[#3e9413] transition">
                 Detail
               </button>
             </div>

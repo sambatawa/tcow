@@ -110,8 +110,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Email terverifikasi. Silakan masuk.",
     });
-  } catch (error) {
-    console.error("[POST /api/auth/verify-email]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memverifikasi kode" },
       { status: 500 }

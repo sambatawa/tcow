@@ -19,8 +19,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const records = await listMedicalRecordsForCattle(id);
     return NextResponse.json({ records });
-  } catch (error) {
-    console.error("[GET /api/sapi/[id]/medis]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memuat riwayat medis" },
       { status: 500 }
@@ -53,10 +52,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ record }, { status: 201 });
   } catch (error) {
-    console.error("[POST /api/sapi/[id]/medis]", error);
-    return NextResponse.json(
-      { error: "Gagal menambahkan riwayat medis" },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error ? error.message : "Gagal menambahkan riwayat medis";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -293,7 +293,7 @@ export default function HomePage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
             {[
-              { icon: FaThermometerHalf, title: "Suhu Tubuh",       val: "38.6°C",    norm: "Normal: 38–39.5°C",  color: "emerald" },
+              { icon: FaThermometerHalf, title: "Suhu Tubuh",       val: "38.6°C",    norm: "Normal: 38–39.5°C",  color: "#54cd19" },
               { icon: FaHeartbeat,    title: "Aktivitas Harian", val: "Aktif",      norm: "6.200 langkah/hari", color: "blue" },
               { icon: FaHeart,       title: "Status Kesehatan", val: "Sehat",      norm: "Skor: 9.1/10",       color: "rose" },
               { icon: FaBroadcastTower,       title: "Koneksi Sensor",   val: "Online",     norm: "Sinyal: Kuat",       color: "violet" },

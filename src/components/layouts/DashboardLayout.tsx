@@ -34,7 +34,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard/sensors", icon: MdOutlineMonitorHeart, label: "Monitoring Sapi", isSubmenu: true },
     { href: "/dashboard/maintenance", icon: FaWrench, label: "Perawatan", isSubmenu: true },
     { href: "/dashboard/admin", icon: FaUsers, label: "Pengguna", isSubmenu: true },
-    { href: "/dashboard/config", icon: FaCog, label: "Sistem", isSubmenu: true },
   ];
 
   const peternakNavItems = [
@@ -92,7 +91,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         setFirebaseAlerts(healthAlerts);
         setAlertsData(healthAlerts.slice(0, 8));
       } catch (e) {
-        console.error("Error fetching health alerts:", e);
         setAlertsData([]);
         setFirebaseAlerts([]);
       }

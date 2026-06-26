@@ -15,6 +15,7 @@ export async function apiFetch<T = Record<string, unknown>>(
 ): Promise<ApiResult<T>> {
   try {
     const res = await fetch(url, init);
+
     const data = (await res.json().catch(() => ({}))) as T & { error?: string };
 
     if (res.status === 401) {
@@ -31,7 +32,7 @@ export async function apiFetch<T = Record<string, unknown>>(
     }
 
     return { ok: true, data, status: res.status };
-  } catch {
+  } catch (e) {
     return { ok: false, error: MSG.networkError, status: 0 };
   }
 }

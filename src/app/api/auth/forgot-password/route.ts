@@ -53,8 +53,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Password berhasil diubah. Silakan masuk.",
     });
-  } catch (error) {
-    console.error("[POST /api/auth/forgot-password]", error);
+  } catch {
     return jsonError("Gagal mengubah password", 500);
   }
 }

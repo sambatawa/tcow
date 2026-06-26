@@ -25,8 +25,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ record });
-  } catch (error) {
-    console.error("[PATCH /api/sapi/[id]/medis/[recordId]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memperbarui riwayat medis" },
       { status: 500 }
@@ -52,8 +51,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[DELETE /api/sapi/[id]/medis/[recordId]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal menghapus riwayat medis" },
       { status: 500 }

@@ -40,7 +40,7 @@ export function PasswordChecksList({
           key={check.label}
           className={
             check.valid
-              ? "text-emerald-600 dark:text-emerald-400"
+              ? "text-[#54cd19] dark:text-[#889063]"
               : "text-brand-sage dark:text-brand-tan"
           }
         >

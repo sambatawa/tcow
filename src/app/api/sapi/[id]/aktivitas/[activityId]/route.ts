@@ -25,8 +25,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ activity });
-  } catch (error) {
-    console.error("[PATCH /api/sapi/[id]/aktivitas/[activityId]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal memperbarui aktivitas" },
       { status: 500 }
@@ -52,8 +51,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[DELETE /api/sapi/[id]/aktivitas/[activityId]]", error);
+  } catch {
     return NextResponse.json(
       { error: "Gagal menghapus aktivitas" },
       { status: 500 }
