@@ -78,10 +78,11 @@ export async function GET(request: NextRequest) {
           : s.sapiUpdate.toISOString(),
       };
     });
-    const weights = informasiFisikList.map((f: (typeof informasiFisikList)[number]) => f.berat_badan);    const avgWeight =
-      weights.length > 0
-        ? parseFloat((weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1))
-        : null;
+    const weights = informasiFisikList.map((f: (typeof informasiFisikList)[number]) => f.berat_badan);    
+    const avgWeight =
+    weights.length > 0
+      ? parseFloat((weights.reduce((a: number, b: number) => a + b, 0) / weights.length).toFixed(1))
+      : null;
 
     const chartSapi = sapiList.map((s, i) => ({
       key: String(s.idsapi),
