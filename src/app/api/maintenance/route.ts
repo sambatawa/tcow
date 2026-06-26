@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       rows = [];
     }
 
-    const teknisiUids = [...new Set(rows.map((m) => m.teknisi_uid))];
+    const teknisiUids = [...new Set(rows.map((m: MaintenanceRow) => m.teknisi_uid))];
     const teknisiList =
       teknisiUids.length > 0
         ? await prisma.pengguna.findMany({
@@ -30,9 +30,11 @@ export async function GET(request: NextRequest) {
             select: { uid: true, name: true },
           })
         : [];
-    const teknisiMap = new Map(teknisiList.map((t) => [t.uid, t.name]));
+    const teknisiMap = new Map<string, string | null>(
+      teknisiList.map((t: { uid: string; name: string | null }) => [t.uid, t.name])
+    );
 
-    const maintenanceData = rows.map((m) => ({
+    const maintenanceData = rows.map((m: MaintenanceRow) => ({
       id: `MT${String(m.idmaintenance).padStart(3, "0")}`,
       sensorId: idsapiToCattleId(m.idsapi),
       date: new Date(m.maintenanceUpdate).toISOString().split("T")[0],
