@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       ? parseFloat((weights.reduce((a: number, b: number) => a + b, 0) / weights.length).toFixed(1))
       : null;
 
-    const chartSapi = sapiList.map((s, i) => ({
+    const chartSapi = sapiList.map((s: (typeof sapiList)[number], i: number) => ({
       key: String(s.idsapi),
       label: s.nama_sapi || `Sapi ID ${s.idsapi}`,
       color: getChartColor(i),
@@ -106,23 +106,23 @@ export async function GET(request: NextRequest) {
     const produksiChart = Array.from(chartBuckets.values()).slice(-12);
 
     const alerts = riwayatMedisList
-      .map((m) => {
-        const terkaitSapi = sapiMap.get(m.idsapi);
-        return {
-          ...m,
-          sapi: terkaitSapi,
-        };
-      })
-      .filter((m) => m.sapi && m.sapi.status_hidup !== "Sehat")
-      .slice(0, 8)
-      .map((m) => ({
-        id: String(m.id_medis),
-        type: healthToAlertType(m.sapi!.status_hidup),
-        title: `${m.sapi!.nama_sapi} — ${m.sapi!.status_hidup}`,
-        message: `${m.catatan || "Menerima tindakan medis"} (${m.jenis_tindakan.replace("_", " ")})`,
-        time: formatRelativeTime(m.tanggal_medis),
-        read: false,
-      }));
+    .map((m: (typeof riwayatMedisList)[number]) => {
+      const terkaitSapi = sapiMap.get(m.idsapi);
+      return {
+        ...m,
+        sapi: terkaitSapi,
+      };
+    })
+    .filter((m) => m.sapi && m.sapi.status_hidup !== "Sehat")
+    .slice(0, 8)
+    .map((m) => ({
+      id: String(m.id_medis),
+      type: healthToAlertType(m.sapi!.status_hidup),
+      title: `${m.sapi!.nama_sapi} — ${m.sapi!.status_hidup}`,
+      message: `${m.catatan || "Menerima tindakan medis"} (${m.jenis_tindakan.replace("_", " ")})`,
+      time: formatRelativeTime(m.tanggal_medis),
+      read: false,
+    }));
 
     if (alerts.length === 0 && sapiList.length > 0) {
       alerts.push({
