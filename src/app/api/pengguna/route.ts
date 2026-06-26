@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       const list = await prisma.pengguna.findMany({
         orderBy: { createdAt: "desc" },
       });
-      const usersData = list.map((p) => {
+      const usersData = list.map((p: (typeof list)[number]) => {
         const daysSinceLogin = Math.floor(
           (Date.now() - p.lastLogin.getTime()) / (24 * 60 * 60 * 1000)
         );
@@ -180,7 +180,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    if (user.uid === uid) {
+    const currentUser = user as { uid: string };
+    if (currentUser.uid === uid) {
       return NextResponse.json(
         { error: "Tidak dapat menghapus akun sendiri" },
         { status: 400 }
