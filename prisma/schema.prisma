@@ -11,6 +11,7 @@ model informasi_fisik {
   idsapi          Int
   berat_badan     Float
   tanggal_timbang DateTime @db.Date
+  sapi            sapi     @relation(fields: [idsapi], references: [idsapi], onDelete: Cascade, map: "produksi_idsapi_fkey")
 
   @@index([idsapi], map: "produksi_idsapi_fkey")
 }
@@ -23,6 +24,8 @@ model maintenance {
   kondisi_alat      maintenance_kondisi_alat @default(Normal)
   Keterangan        String?                  @db.Text
   maintenanceUpdate DateTime                 @default(now())
+  sapi              sapi                     @relation(fields: [idsapi], references: [idsapi], onDelete: Cascade)
+  pengguna          pengguna                 @relation(fields: [teknisi_uid], references: [uid])
 
   @@index([idsapi], map: "maintenance_idsapi_fkey")
   @@index([teknisi_uid], map: "maintenance_teknisi_uid_fkey")
@@ -40,6 +43,7 @@ model pengguna {
   alamat       String?       @db.VarChar(255)
   createdAt    DateTime      @default(now())
   lastLogin    DateTime      @default(now())
+  maintenance  maintenance[]
 
   @@unique([uid, role])
 }
@@ -62,6 +66,7 @@ model riwayatmedis {
   jenis_tindakan riwayatmedis_jenis_tindakan
   tanggal_medis  DateTime                    @db.Date
   catatan        String?                     @db.Text
+  sapi           sapi                        @relation(fields: [idsapi], references: [idsapi], onDelete: Cascade)
 
   @@index([idsapi], map: "riwayatmedis_idsapi_fkey")
 }
@@ -72,22 +77,28 @@ model riwayatreproduksi {
   tanggal_ib    DateTime @db.Date
   nama_pejantan String   @db.VarChar(100)
   keterangan    String?  @db.Text
+  sapi          sapi     @relation(fields: [idsapi], references: [idsapi], onDelete: Cascade)
 
   @@index([idsapi], map: "riwayatreproduksi_idsapi_fkey")
 }
 
 model sapi {
-  idsapi           Int                @id @default(autoincrement())
-  nomor_eartag     String?            @unique
-  nama_sapi        String
-  jenis_sapi       String
-  jenis_kelamin    sapi_jenis_kelamin
-  kandang          sapi_kandang
-  tanggal_lahir    DateTime           @db.Date
-  status_hidup     sapi_status_hidup  @default(Sehat)
-  keteranganStatus String?            @db.Text
-  statusUpdate     DateTime?          @db.Date
-  sapiUpdate       DateTime           @default(now())
+  idsapi            Int                 @id @default(autoincrement())
+  nomor_eartag      String?             @unique
+  nama_sapi         String
+  jenis_sapi        String
+  jenis_kelamin     sapi_jenis_kelamin
+  kandang           sapi_kandang
+  tanggal_lahir     DateTime            @db.Date
+  status_hidup      sapi_status_hidup   @default(Sehat)
+  keteranganStatus  String?             @db.Text
+  statusUpdate      DateTime?           @db.Date
+  sapiUpdate        DateTime            @default(now())
+  nama_eartag       String?             @db.VarChar(100)
+  informasi_fisik   informasi_fisik[]
+  maintenance       maintenance[]
+  riwayatmedis      riwayatmedis[]
+  riwayatreproduksi riwayatreproduksi[]
 }
 
 model verifikasi_email {
@@ -107,20 +118,17 @@ model verifikasi_email {
 }
 
 model notifikasi {
-  id_notifikasi   String            @id @map("id_notifikasi") @db.VarChar(36)
+  id_notifikasi  String            @id @map("id_notifikasi") @db.VarChar(36)
   idsapi         String            @db.VarChar(50)
   type           notification_type @default(warning)
   title          String            @db.VarChar(255)
   message        String            @db.Text
-  temperature    Float
+  temperature    Float             @db.Float
   healthStatus   String            @map("health_status") @db.VarChar(50)
-  isRead         Boolean           @map("is_read") @default(false)
-  isSentTelegram Boolean          @map("is_sent_telegram") @default(false)
-  alertTime      DateTime          @map("alert_time")
+  isRead         Boolean           @default(false) @map("is_read")
+  isSentTelegram Boolean           @default(false) @map("is_sent_telegram")
+  alertTime      DateTime          @map("alert_time") @db.DateTime(0)
 
-  @@index([idsapi])
-  @@index([type])
-  @@index([isRead])
   @@map("notifikasi")
 }
 
