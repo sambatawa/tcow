@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         orderBy: { tanggal_ib: "desc" },
       }),
     ]);
+    
     const latestFisik = new Map<number, (typeof informasiFisikList)[number]>();
     for (const row of informasiFisikList) {
       latestFisik.set(row.idsapi, row);
@@ -78,6 +79,7 @@ export async function GET(request: NextRequest) {
           : s.sapiUpdate.toISOString(),
       };
     });
+    
     const weights = informasiFisikList.map((f: (typeof informasiFisikList)[number]) => f.berat_badan);    
     const avgWeight =
     weights.length > 0
@@ -105,24 +107,24 @@ export async function GET(request: NextRequest) {
     }
     const produksiChart = Array.from(chartBuckets.values()).slice(-12);
 
-    const alerts = riwayatMedisList
-    .map((m: (typeof riwayatMedisList)[number]) => {
+    const mappedAlerts = riwayatMedisList.map((m: (typeof riwayatMedisList)[number]) => {
       const terkaitSapi = sapiMap.get(m.idsapi);
       return {
         ...m,
         sapi: terkaitSapi,
       };
-    })
-    .filter((m) => m.sapi && m.sapi.status_hidup !== "Sehat")
-    .slice(0, 8)
-    .map((m) => ({
-      id: String(m.id_medis),
-      type: healthToAlertType(m.sapi!.status_hidup),
-      title: `${m.sapi!.nama_sapi} — ${m.sapi!.status_hidup}`,
-      message: `${m.catatan || "Menerima tindakan medis"} (${m.jenis_tindakan.replace("_", " ")})`,
-      time: formatRelativeTime(m.tanggal_medis),
-      read: false,
-    }));
+    });
+
+    const alerts = mappedAlerts.filter((m: (typeof mappedAlerts)[number]) => m.sapi !== undefined && m.sapi.status_hidup !== "Sehat")
+      .slice(0, 8)
+      .map((m: (typeof mappedAlerts)[number]) => ({
+        id: String(m.id_medis),
+        type: healthToAlertType(m.sapi!.status_hidup),
+        title: `${m.sapi!.nama_sapi} — ${m.sapi!.status_hidup}`,
+        message: `${m.catatan || "Menerima tindakan medis"} (${m.jenis_tindakan.replace("_", " ")})`,
+        time: formatRelativeTime(m.tanggal_medis),
+        read: false,
+      }));
 
     if (alerts.length === 0 && sapiList.length > 0) {
       alerts.push({
