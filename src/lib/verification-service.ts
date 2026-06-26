@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import {
   LOCK_DURATION_MS,
@@ -16,8 +15,22 @@ export type VerificationBlockReason =
   | "resend_cooldown"
   | "resend_limit";
 
+export type VerificationRecord = {
+  id: string;
+  email: string;
+  codeHash: string;
+  payload: string;
+  expiresAt: Date;
+  createdAt: Date;
+  resendCount: number;
+  lastResendAt: Date | null;
+  cooldownUntil: Date | null;
+  failedAttempts: number;
+  lockedUntil: Date | null;
+};
+
 export type VerificationGateResult =
-  | { ok: true; record: Prisma.verifikasi_emailGetPayload<true> }
+  | { ok: true; record: VerificationRecord }
   | {
       ok: false;
       reason: VerificationBlockReason;
@@ -35,8 +48,8 @@ export async function findVerificationRecord(email: string) {
 }
 
 export async function refreshVerificationCycle(
-  record: Prisma.verifikasi_emailGetPayload<true>
-): Promise<Prisma.verifikasi_emailGetPayload<true>> {
+  record: VerificationRecord
+): Promise<VerificationRecord> {
   const now = new Date();
   if (record.lockedUntil && record.lockedUntil <= now) {
     return prisma.verifikasi_email.update({
@@ -84,7 +97,7 @@ export async function recordVerificationLockWarning(
   });
 }
 
-export async function applyResendLock(record: Prisma.verifikasi_emailGetPayload<true>) {
+export async function applyResendLock(record: VerificationRecord) {
   const lockedUntil = addMs(new Date(), LOCK_DURATION_MS);
   await recordVerificationLockWarning(
     record.email,
@@ -102,7 +115,7 @@ export async function applyResendLock(record: Prisma.verifikasi_emailGetPayload<
 }
 
 export async function assertCanResendCode(
-  record: Prisma.verifikasi_emailGetPayload<true>
+  record: VerificationRecord
 ): Promise<VerificationGateResult> {
   const refreshed = await refreshVerificationCycle(record);
 
@@ -152,7 +165,7 @@ export async function assertCanResendCode(
   };
 }
 
-export function buildVerificationStatus(record: Prisma.verifikasi_emailGetPayload<true>) {
+export function buildVerificationStatus(record: VerificationRecord) {
   const now = new Date();
   const locked =
     record.lockedUntil !== null && record.lockedUntil > now;
