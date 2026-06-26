@@ -1,8 +1,18 @@
-import type { pengguna } from "@prisma/client";
-
 export type AppRole = "Peternak" | "Teknisi";
-export type Role = pengguna["role"];
-export type Pengguna = pengguna;
+export type Role = "Peternak" | "Teknisi";
+
+export type Pengguna = {
+  uid: string;
+  firebase_uid: string | null;
+  no_kode: string;
+  name: string;
+  email: string;
+  role: Role;
+  image: string | null;
+  alamat: string | null;
+  createdAt: Date;
+  lastLogin: Date;
+};
 
 export type PenggunaPublic = {
   uid: string;
