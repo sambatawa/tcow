@@ -12,6 +12,7 @@ import {
   type MedicalRecordInput,
   type SapiBundle,
   type VaccinationRecord,
+  type LastVaccinationDates,
 } from "@/lib/sapi";
 
 type RiwayatmedisJenisTindakan = "Obat_Cacing" | "Vaksin_PMK" | "Vaksin_LSD";
@@ -199,6 +200,7 @@ export async function buildSapiBundle(): Promise<SapiBundle> {
       kandangKategori: s.kandang as SapiKandang,
       birthDate: s.tanggal_lahir.toISOString().split("T")[0],
       eartag: s.nomor_eartag,
+      namaEartag: s.nama_eartag,
       milkAvg: f?.berat_badan ? Math.round(f.berat_badan * 0.05 * 10) / 10 : 0,
       lastCheck: (m?.tanggal_medis ?? s.tanggal_lahir)
         .toISOString()
@@ -251,6 +253,82 @@ export async function findCattleByParam(idParam: string) {
   const cattle =
     byNum ?? bundle.cattle.find((c) => c.id === idParam) ?? null;
   return { cattle, bundle };
+}
+
+export async function getLastVaccinationDates(
+  idsapi: number
+): Promise<LastVaccinationDates> {
+  const types: RiwayatmedisJenisTindakan[] = [
+    "Obat_Cacing",
+    "Vaksin_PMK",
+    "Vaksin_LSD",
+  ];
+
+  const records = await Promise.all(
+    types.map((jenis_tindakan) =>
+      prisma.riwayatmedis.findFirst({
+        where: { idsapi, jenis_tindakan },
+        orderBy: { tanggal_medis: "desc" },
+        select: { tanggal_medis: true },
+      })
+    )
+  );
+
+  const toDateStr = (date: Date | undefined) =>
+    date ? date.toISOString().split("T")[0] : null;
+
+  return {
+    obatCacing: toDateStr(records[0]?.tanggal_medis),
+    vaksinPmk: toDateStr(records[1]?.tanggal_medis),
+    vaksinLsd: toDateStr(records[2]?.tanggal_medis),
+  };
+}
+
+export async function findCattleByNamaEartag(
+  namaEartag: string
+): Promise<CattleListItem | null> {
+  const code = namaEartag.trim();
+  if (!code) return null;
+
+  const sapi = await prisma.sapi.findFirst({
+    where: { nama_eartag: code },
+  });
+  if (!sapi) return null;
+
+  const [latestMedis, latestFisik] = await Promise.all([
+    prisma.riwayatmedis.findFirst({
+      where: { idsapi: sapi.idsapi },
+      orderBy: { tanggal_medis: "desc" },
+    }),
+    prisma.informasi_fisik.findFirst({
+      where: { idsapi: sapi.idsapi },
+      orderBy: { tanggal_timbang: "desc" },
+    }),
+  ]);
+
+  const cattleId = idsapiToCattleId(sapi.idsapi);
+  return {
+    id: cattleId,
+    idsapi: sapi.idsapi,
+    name: sapi.nama_sapi,
+    breed: sapi.jenis_sapi,
+    gender: sapi.jenis_kelamin,
+    age: calcAgeYears(sapi.tanggal_lahir),
+    weight: latestFisik?.berat_badan ?? 0,
+    status: sapi.kandang,
+    health: sapi.status_hidup as SapiStatusHidup,
+    stall: `Kandang ${cattleId}`,
+    kandangKategori: sapi.kandang as SapiKandang,
+    birthDate: sapi.tanggal_lahir.toISOString().split("T")[0],
+    eartag: sapi.nomor_eartag,
+    namaEartag: sapi.nama_eartag,
+    milkAvg: latestFisik?.berat_badan
+      ? Math.round(latestFisik.berat_badan * 0.05 * 10) / 10
+      : 0,
+    lastCheck: (latestMedis?.tanggal_medis ?? sapi.tanggal_lahir)
+      .toISOString()
+      .split("T")[0],
+  };
 }
 
 function parseDateInput(value: string | undefined, fallback = new Date()): Date {

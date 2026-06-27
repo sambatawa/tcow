@@ -12,8 +12,22 @@ export type CattleListItem = {
   kandangKategori: string;
   birthDate: string;
   eartag: string | null;
+  namaEartag: string | null;
   milkAvg: number;
   lastCheck: string;
+};
+
+export type LastVaccinationDates = {
+  obatCacing: string | null;
+  vaksinPmk: string | null;
+  vaksinLsd: string | null;
+};
+
+export type PublicCattleScanInfo = Pick<
+  CattleListItem,
+  | "id"| "name"| "breed"| "gender"| "age"| "weight"| "health"| "stall"| "kandangKategori"| "birthDate"| "lastCheck"| "namaEartag"
+> & {
+  lastVaccinations: LastVaccinationDates;
 };
 
 export type CattleInput = {

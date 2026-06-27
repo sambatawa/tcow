@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 
 const PUBLIC_ROUTES = ["/api/auth/login", "/api/auth/register", "/api/auth/verify-email","/api/auth/verify-kode",
   "/api/auth/forgot-password", "/api/auth/resend-verification", "/api/auth/verification-status", "/api/auth/cleanup-expired", 
-  "/api/auth/google","/api/auth/logout"];
+  "/api/auth/google","/api/auth/logout", "/api/sapi/scan"];
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
 ];

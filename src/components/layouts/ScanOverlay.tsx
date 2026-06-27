@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
-import { swalSuccess, swalError, swalWarning } from "@/lib/swal";
-import type { CattleListItem } from "@/lib/sapi";
+import { swalWarning } from "@/lib/swal";
+import type { PublicCattleScanInfo } from "@/lib/sapi";
+import { formatKandangLabel } from "@/lib/sapi";
 import { Html5Qrcode } from "html5-qrcode";
 import "@/app/globals.css";
 
@@ -16,19 +17,21 @@ interface ScanOverlayProps {
 export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
   const videoRef = useRef<HTMLDivElement | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scanningRef = useRef(false);
+  const processingRef = useRef(false);
   const [scanning, setScanning] = useState(false);
   const [status, setStatus] = useState("Mengaktifkan kamera...");
-  const [scannedCode, setScannedCode] = useState<string | null>(null);
-  const [cattle, setCattle] = useState<CattleListItem | null>(null);
+  const [cattle, setCattle] = useState<PublicCattleScanInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [useNativeApi, setUseNativeApi] = useState(false);
 
   const stopScanner = useCallback(async () => {
+    scanningRef.current = false;
     if (scannerRef.current) {
       try {
         const state = scannerRef.current.getState();
-        if (state === 2) { 
+        if (state === 2) {
           await scannerRef.current.stop();
         }
       } catch {
@@ -39,28 +42,12 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
     setCameraReady(false);
   }, []);
 
-  useEffect(() => {
-    if (!isOpen) {
-      stopScanner();
-      return;
-    }
-    setScannedCode(null);
-    setCattle(null);
-    setError(null);
-    setCameraReady(false);
-    setStatus("Mengaktifkan kamera...");
-    startScanner();
-
-    return () => {
-      stopScanner();
-    };
-  }, [isOpen]);
-
   const startScanner = async () => {
     setError(null);
+    processingRef.current = false;
 
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setError("Perangkat tidak mendukung akses kamera.");
+      setError("Perangkat tidak bisa akses kamera.");
       setStatus("Kamera tidak tersedia");
       return;
     }
@@ -74,13 +61,11 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 300, height: 150 },
-          aspectRatio: 1.333333,
+          qrbox: { width: 320, height: 260 }, 
+          aspectRatio: 1.0, 
         },
         (decodedText) => {
-          setScannedCode(decodedText);
-          setScanning(false);
-          fetchCattle(decodedText);
+          handleScanResult(decodedText);
           scanner.stop().catch(() => {});
         },
         () => {}
@@ -88,23 +73,87 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
 
       setUseNativeApi(false);
       setCameraReady(true);
+      scanningRef.current = true;
       setScanning(true);
-      setStatus("Sedang memindai...");
-    } catch (err: any) {
+      setStatus("Arahkan kamera ke barcode");
+    } catch (err: unknown) {
       if (hasNativeApi && !useNativeApi) {
         startNativeScanner();
         return;
       }
-      if (err.name === "NotAllowedError") {
+      const error = err as { name?: string };
+      if (error.name === "NotAllowedError") {
         setStatus("Izin ditolak");
-        swalWarning("Izin Ditolak", "Izinkan akses kamera terlebih dahulu");
-      } else if (err.name === "NotFoundError") {
+        swalWarning("Izin Ditolak", "Izinkan akses kamera");
+      } else if (error.name === "NotFoundError") {
         setStatus("Kamera tidak ditemukan");
       } else {
         setStatus("Gagal mengakses kamera");
       }
     }
   };
+
+  const resumeScanning = useCallback(async () => {
+    processingRef.current = false;
+    setCattle(null);
+    setStatus("Mempersiapkan scanner...");
+    await stopScanner();
+    setTimeout(() => {
+      startScanner();
+    }, 300);
+  }, [stopScanner]);
+
+  const handleScanResult = useCallback(
+    async (decodedText: string) => {
+      if (processingRef.current) return;
+      processingRef.current = true;
+      scanningRef.current = false;
+      setScanning(false);
+      const code = decodedText.trim();
+      if (!code) {
+        processingRef.current = false;
+        return;
+      }
+
+      setStatus("Mencari data sapi...");
+
+      try {
+        const res = await fetch(
+          `/api/sapi/scan/${encodeURIComponent(code)}`
+        );
+
+        if (!res.ok) {
+          setStatus("Barcode bukan eartag TCow — lanjut memindai...");
+          processingRef.current = false;
+          setTimeout(() => {
+            resumeScanning();
+          }, 1800);
+          return;
+        }
+
+        const json = (await res.json()) as { cattle?: PublicCattleScanInfo };
+        if (!json.cattle) {
+          setStatus("Barcode bukan eartag TCow skip");
+          processingRef.current = false;
+          setTimeout(() => {
+            resumeScanning();
+          }, 1800);
+          return;
+        }
+
+        await stopScanner();
+        setCattle(json.cattle);
+        setStatus(`Sapi ditemukan: ${json.cattle.name}`);
+      } catch {
+        setStatus("Gagal mengambil data coba lagi...");
+        processingRef.current = false;
+        setTimeout(() => {
+          resumeScanning();
+        }, 1800);
+      }
+    },
+    [resumeScanning, stopScanner]
+  );
 
   const startNativeScanner = async () => {
     const videoElement = videoRef.current?.querySelector("video");
@@ -117,16 +166,17 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
       await videoElement.play();
       setUseNativeApi(true);
       setCameraReady(true);
+      scanningRef.current = true;
       setScanning(true);
-      setStatus("Sedang memindai...");
+      setStatus("Arahkan kamera ke barcode eartag...");
 
-      const detector = new (window as any).BarcodeDetector({
+      const detector = new (window as unknown as { BarcodeDetector: new (opts: { formats: string[] }) => { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue?: string; displayValue?: string }>> } }).BarcodeDetector({
         formats: ["qr_code", "code_128", "code_39", "ean_13", "upc_a", "upc_e"],
       });
       nativeScanLoop(detector, videoElement, stream);
-    } catch (err: any) {
-      if (err.name === "NotAllowedError") {
-        setStatus("Izin ditolak");
+    } catch (err: unknown) {
+      const error = err as { name?: string };
+      if (error.name === "NotAllowedError") {
       } else {
         setStatus("Gagal mengakses kamera");
       }
@@ -134,144 +184,187 @@ export function ScanOverlay({ isOpen, onClose }: ScanOverlayProps) {
   };
 
   const nativeScanLoop = async (
-    detector: any,
+    detector: { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue?: string; displayValue?: string }>> },
     videoElement: HTMLVideoElement,
     stream: MediaStream
   ) => {
-    if (!scanning || !videoElement) return;
+    if (!scanningRef.current || !videoElement) return;
 
     try {
       const barcodes = await detector.detect(videoElement);
       if (barcodes.length > 0) {
         const value = barcodes[0]?.rawValue ?? barcodes[0]?.displayValue;
         if (value) {
-          setScannedCode(value);
-          setScanning(false);
-          stream.getTracks().forEach(track => track.stop());
-          await fetchCattle(value);
+          stream.getTracks().forEach((track) => track.stop());
+          await handleScanResult(value);
           return;
         }
       }
-    } catch {}
+    } catch {
+    }
 
-    if (scanning) {
+    if (scanningRef.current) {
       setTimeout(() => nativeScanLoop(detector, videoElement, stream), 500);
     }
   };
 
-  const fetchCattle = async (code: string) => {
-    setError(null);
-    setCattle(null);
-    setStatus("Mencari data sapi...");
-
-    try {
-      const res = await fetch(`/api/sapi/${encodeURIComponent(code)}`);
-      if (!res.ok) {
-        swalError("Tidak Ditemukan", "Sapi tidak ditemukan");
-        setStatus("Sapi tidak ditemukan");
-        return;
-      }
-      const json = await res.json();
-      if (!json.cattle) {
-        swalError("Tidak Ditemukan", "Sapi tidak ditemukan");
-        setStatus("Sapi tidak ditemukan");
-        return;
-      }
-
-      setCattle(json.cattle);
-      setStatus(`Sapi ditemukan: ${json.cattle.name}`);
-      swalSuccess("Berhasil", `Sapi ${json.cattle.name} berhasil ditemukan!`);
-    } catch {
-      swalError("Gagal", "Gagal mengambil data sapi");
-      setStatus("Gagal mengambil data");
+  useEffect(() => {
+    if (!isOpen) {
+      stopScanner();
+      return;
     }
-  };
+    setCattle(null);
+    setError(null);
+    setCameraReady(false);
+    setStatus("Mengaktifkan kamera...");
+    startScanner();
+
+    return () => {
+      stopScanner();
+    };
+  }, [isOpen]);
 
   const handleReset = async () => {
-    setScannedCode(null);
-    setCattle(null);
-    setError(null);
-    setStatus("Mempersiapkan scanner...");
-    setScanning(false);
-    await stopScanner();
-    setTimeout(() => {
-      startScanner();
-    }, 100);
-  };
-
-  const handleViewDetail = () => {
-    if (cattle?.id) {
-      window.location.href = `/dashboard/cattle/${encodeURIComponent(cattle.id)}`;
-    }
+    await resumeScanning();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-6 aspect-[4/3] bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-white/10">
-        <div ref={videoRef} id="html5qr-video" className="w-full h-full">
-          {useNativeApi && (
-            <video className="w-full h-full object-cover" playsInline muted />
+      {!cattle && (
+        <div className="relative w-full max-w-xl mx-4 h-[70vh] md:h-[60vh] bg-stone-900 rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col">
+          <div ref={videoRef} id="html5qr-video" className="w-full h-full [&>video]:object-cover">
+            {useNativeApi && (
+              <video className="w-full h-full object-cover" playsInline muted />
+            )}
+          </div>
+
+          <div className="absolute top-4 inset-x-0 flex justify-center pointer-events-none z-10">
+            <div className="bg-black/60 backdrop-blur-md px-5 py-1.5 rounded-full border border-white/10">
+              <p className="text-white text-xs font-medium tracking-wide">
+                {status}
+              </p>
+            </div>
+          </div>
+
+          {scanning && cameraReady && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-72 h-64 relative">
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-[#4ade80] rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-[#4ade80] rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-[#4ade80] rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-[#4ade80] rounded-br-lg" />
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-white p-6 z-20">
+              <FaExclamationTriangle className="w-10 h-10 text-amber-400 mb-3" />
+              <p className="text-center text-sm">{error}</p>
+              <button
+                onClick={handleReset}
+                className="mt-4 px-5 py-2 bg-[#54cd19] hover:bg-[#3e9413] rounded-full text-xs font-medium transition"
+              >
+                Coba Lagi
+              </button>
+            </div>
           )}
         </div>
+      )}
 
-        <div className="absolute top-4 inset-x-0 flex justify-center pointer-events-none z-10">
-          <div className="bg-black/60 backdrop-blur-md px-5 py-1.5 rounded-full border border-white/10">
-            <p className="text-white text-xs font-medium tracking-wide">
-              {status}
-            </p>
-          </div>
-        </div>
-        {scanning && cameraReady && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-64 h-36 relative">
-              <div className="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-[#4ade80] rounded-tl-lg" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-[#4ade80] rounded-tr-lg" />
-              <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-[#4ade80] rounded-bl-lg" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-[#4ade80] rounded-br-lg" />
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-white p-6 z-20">
-            <FaExclamationTriangle className="w-10 h-10 text-amber-400 mb-3" />
-            <p className="text-center text-sm">{error}</p>
-            <button onClick={handleReset} className="mt-4 px-5 py-2 bg-[#54cd19] hover:bg-[#3e9413] rounded-full text-xs font-medium transition">
-              Coba Lagi
-            </button>
-          </div>
-        )}
-      </div>
-
-      <button onClick={onClose} title="Close" className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center border border-white/20 hover:bg-black/60 transition-colors z-[110]">
+      <button
+        onClick={onClose}
+        title="Close"
+        className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center border border-white/20 hover:bg-black/60 transition-colors z-[110]"
+      >
         <FaX className="w-4 h-4" />
       </button>
+
       {cattle && (
-        <div className="absolute bottom-10 inset-x-6 max-w-sm mx-auto bg-white dark:bg-stone-900 p-4 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 z-30 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-stone-900 dark:text-white truncate">{cattle.name}</p>
-                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                  cattle.health === "Sehat"
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                }`}>
-                  {cattle.health}
-                </span>
-              </div>
-              <p className="text-xs text-stone-500 truncate">{cattle.id} • {cattle.breed}</p>
+        <div className="w-full max-w-md mx-6 bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 z-30 animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
+          <div className="bg-brand-forest dark:bg-brand-accent/90 px-4 py-3 flex items-center justify-between">
+            <div>
+              <p className="text-white dark:text-brand-forest font-semibold text-base truncate">
+                {cattle.name}
+              </p>
             </div>
-            <div className="flex gap-2 shrink-0">
-              <button onClick={handleReset} className="px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-800 dark:hover:text-white transition">
-                Reset
-              </button>
-              <button onClick={handleViewDetail} className="px-3 py-1.5 bg-[#54cd19] text-white rounded-lg text-xs font-medium hover:bg-[#3e9413] transition">
-                Detail
-              </button>
+            <span
+              className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                cattle.health === "Sehat"
+                  ? "bg-green-400/20 text-green-100"
+                  : cattle.health === "Sakit"
+                    ? "bg-red-400/20 text-red-100"
+                    : "bg-stone-400/20 text-stone-200"
+              }`}
+            >
+              {cattle.health}
+            </span>
+          </div>
+
+          <div className="p-4 grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-0.5">Jenis</p>
+              <p className="font-medium text-stone-800 dark:text-stone-100 truncate">{cattle.breed}</p>
             </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-0.5">Kelamin</p>
+              <p className="font-medium text-stone-800 dark:text-stone-100">{cattle.gender}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-0.5">Umur</p>
+              <p className="font-medium text-stone-800 dark:text-stone-100">{cattle.age} tahun</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-0.5">Bobot</p>
+              <p className="font-medium text-stone-800 dark:text-stone-100">
+                {cattle.weight > 0 ? `${cattle.weight} kg` : "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-0.5">Kandang</p>
+              <p className="font-medium text-stone-800 dark:text-stone-100 truncate">
+                {formatKandangLabel(cattle.kandangKategori)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-0.5">Pemeriksaan</p>
+              <p className="font-medium text-stone-800 dark:text-stone-100">{cattle.lastCheck}</p>
+            </div>
+          </div>
+
+          <div className="px-4 pb-3 border-t border-stone-100 dark:border-stone-800 pt-3">
+            <p className="text-[10px] uppercase tracking-wide text-stone-400 mb-2">
+              Vaksinasi Terakhir
+            </p>
+            <div className="space-y-2">
+              {(
+                [
+                  { label: "Obat Cacing", date: cattle.lastVaccinations.obatCacing },
+                  { label: "Vaksin PMK", date: cattle.lastVaccinations.vaksinPmk },
+                  { label: "Vaksin LSD", date: cattle.lastVaccinations.vaksinLsd },
+                ] as const
+              ).map((item) => (
+                <div key={item.label}
+                  className="flex items-center justify-between gap-3 text-sm"
+                >
+                  <span className="text-stone-500 dark:text-stone-400">{item.label}</span>
+                  <span className="font-medium text-stone-800 dark:text-stone-100 shrink-0">
+                    {item.date ?? "Belum pernah"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-4 pb-4 flex justify-end">
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 bg-[#54cd19] hover:bg-[#3e9413] text-white rounded-xl text-xs font-semibold transition"
+            >
+              Scan Lagi
+            </button>
           </div>
         </div>
       )}
