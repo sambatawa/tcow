@@ -235,8 +235,7 @@ function VerifyEmailForm() {
         </h1>
         <p className="text-brand-sage dark:text-brand-tan/90 mt-2 text-sm leading-relaxed">
           Kami mengirim kode 6 digit ke email Anda. Kode berlaku{" "}
-          <strong>60 detik</strong> — setelah itu minta kode baru (maks. 3 kali
-          per jam).
+          <strong>60 detik</strong>, setelah itu minta kode baru (maks. 3 kali).
         </p>
       </header>
 
@@ -322,15 +321,6 @@ function VerifyEmailForm() {
           </div>
 
           <div className="flex flex-col items-center gap-1 mt-3">
-            {codeExpiresIn > 0 ? (
-              <div className="text-xs text-brand-sage dark:text-brand-tan">
-                Kode aktif: {codeExpiresIn}s
-              </div>
-            ) : (
-              <div className="text-xs text-amber-600 dark:text-amber-400">
-                Kode kedaluwarsa — minta kode baru
-              </div>
-            )}
 
             <div className="text-xs text-brand-sage dark:text-brand-tan">
               Sisa kirim ulang: {remainingResends} dari 3
@@ -343,7 +333,6 @@ function VerifyEmailForm() {
           {loading ? (
             <span className="flex items-center gap-2 justify-center">
               <FaSpinner className="w-4 h-4 animate-spin" />
-              Memverifikasi...
             </span>
           ) : (
             "Verifikasi"
@@ -353,10 +342,7 @@ function VerifyEmailForm() {
 
       <p className="text-center text-sm text-brand-sage dark:text-brand-tan">
         Sudah verifikasi?{" "}
-        <Link
-          href="/login"
-          className="text-brand-forest dark:text-brand-accent font-semibold hover:underline"
-        >
+        <Link href="/login" className="text-brand-forest dark:text-brand-accent font-semibold hover:underline">
           Masuk
         </Link>
       </p>

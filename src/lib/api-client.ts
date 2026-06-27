@@ -14,7 +14,27 @@ export async function apiFetch<T = Record<string, unknown>>(
   init?: RequestInit
 ): Promise<ApiResult<T>> {
   try {
-    const res = await fetch(url, init);
+    const headers = new Headers(init?.headers);
+    
+    // Add auth headers from localStorage
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("sdf_user");
+      if (stored) {
+        try {
+          const user = JSON.parse(stored);
+          if (user?.uid) headers.set("x-user-id", user.uid);
+          if (user?.email) headers.set("x-user-email", user.email);
+          if (user?.role) headers.set("x-user-role", user.role);
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+
+    const res = await fetch(url, {
+      ...init,
+      headers,
+    });
 
     const data = (await res.json().catch(() => ({}))) as T & { error?: string };
 

@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Email terverifikasi. Silakan masuk.",
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: "Gagal memverifikasi kode" },
       { status: 500 }

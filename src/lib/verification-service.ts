@@ -52,7 +52,7 @@ export async function refreshVerificationCycle(
 ): Promise<VerificationRecord> {
   const now = new Date();
   if (record.lockedUntil && record.lockedUntil <= now) {
-    return prisma.verifikasi_email.update({
+    const updated = await prisma.verifikasi_email.update({
       where: { id: record.id },
       data: {
         lockedUntil: null,
@@ -60,19 +60,21 @@ export async function refreshVerificationCycle(
         resendCount: 0,
       },
     });
+    return updated as VerificationRecord;
   }
   if (
     record.cooldownUntil &&
     record.cooldownUntil <= now &&
     record.resendCount >= MAX_RESENDS_PER_CYCLE
   ) {
-    return prisma.verifikasi_email.update({
+    const updated = await prisma.verifikasi_email.update({
       where: { id: record.id },
       data: {
         cooldownUntil: null,
         resendCount: 0,
       },
     });
+    return updated as VerificationRecord;
   }
   return record;
 }

@@ -197,7 +197,7 @@ export default function MainDashboard() {
   // Reset dimmed cows when sensor data changes
   useEffect(() => {
     setDimmedCows(new Set());
-  }, [sensorHistory.length]);
+  }, [sensorHistory]);
 
   const toggleCowDim = (key: string) => {
     setDimmedCows((prev) => {
