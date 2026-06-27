@@ -9,12 +9,12 @@ import {
 } from "react-icons/fa";
 import { GiCow } from "react-icons/gi";
 
-const IMG_SENSOR  = "https://images.unsplash.com/photo-1762381650890-43b1030fc842?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3clMjBlYXIlMjB0YWclMjBJb1QlMjB3ZWFyYWJsZSUyMHNlbnNvciUyMGNvbHNlJTIwdXB8ZW58MXx8fHwxNzc3MTA1MDA2fDA&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_VET     = "https://images.unsplash.com/photo-1598555800431-229e18bc8ac5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZXRlcmluYXJpYW4lMjBkb2N0b3IlMjBjaGVja2luZyUyMGNvdyUyMGhlYWx0aHxlbnwxfHx8MTc3NzEwNDA3NHww&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_HERD    = "https://images.unsplash.com/photo-1691886789655-0c71dbd54044?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYWlyeSUyMGNvdyUyMGhlcmQlMjBncmVlbiUyMHBhc3R1cmV8ZW58MXx8fHwxNzc3MTA0MDczfDA&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_DASH    = "https://images.unsplash.com/photo-1580982186123-27ab767830aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwZGFzaGJvYXJkJTIwc2NyZWVuJTIwYWdyaWN1bHR1cmV8ZW58MXx8fHwxNzc3MTA1MDExfDA&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_BARN    = "https://images.unsplash.com/photo-1628295934652-8f46c0423c2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXR0bGUlMjBicmVlZGluZyUyMGZhcm0lMjBiYXJuJTIwc3RhYmxlfGVufDF8fHx8MTc3NzEwNDA3Nnww&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_FARMER  = "https://images.unsplash.com/photo-1642439994493-3816a23c997a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtZXIlMjB1c2luZyUyMHRhYmxldCUyMHNtYXJ0JTIwYWdyaWN1bHR1cmUlMjBmaWVsZHxlbnwxfHx8MTc3NzEwNDA3M3ww&ixlib=rb-4.1.0&q=80&w=1080";
+const IMG_SENSOR  = "/image/sapi/sapi5.jpeg";
+const IMG_VET     = "/image/sapi/sapi3.jpeg";
+const IMG_HERD    = "/image/sapi/sapi2.jpeg";
+const IMG_DASH    = "/image/sapi/sapi6.jpeg";
+const IMG_BARN    = "/image/sapi/sapi4.jpeg";
+const IMG_FARMER  = "/image/tim.jpeg";
 
 const mainFeatures = [
   {

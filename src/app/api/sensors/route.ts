@@ -66,7 +66,6 @@ export async function GET(request: NextRequest) {
               `🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Demam Tinggi)\n` +
               `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
               `📍 *Lokasi:* ${sapi.location}\n` +
-              `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
               `_Mohon petugas lapangan segera mengecek kondisi kesehatan sapi._`;
 
             sendTelegramNotification(pesanSuhuTinggi);
@@ -82,7 +81,6 @@ export async function GET(request: NextRequest) {
               `🌡️ *Suhu Tubuh:* ${sapi.temperature}°C (⚠️ Terlalu Rendah)\n` +
               `🔋 *Baterai Eartag:* ${sapi.battery}%\n` +
               `📍 *Lokasi:* ${sapi.location}\n` +
-              `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
               `_Deteksi suhu drop di bawah normal. Harap periksa apakah alat T-Cow° terlepas dari telinga sapi._`;
 
             sendTelegramNotification(pesanSuhuRendah);
@@ -98,7 +96,6 @@ export async function GET(request: NextRequest) {
               `===== DATA KONDISI =====\n` +
               `🔋 *Sisa Baterai:* ${sapi.battery}% (${sapi.battery === 0 ? "⚠️ ALAT OFF / BATTERY CRITICAL" : "⚠️ Segera Cas"})\n` +
               `🌡️ *Suhu Terakhir:* ${sapi.temperature}°C\n` +
-              `🕒 *Waktu Data:* ${sapi.lastUpdate}\n\n` +
               `_Mohon tim teknis segera melakukan maintenance/penggantian baterai eartag._`;
 
             sendTelegramNotification(pesanBaterai);

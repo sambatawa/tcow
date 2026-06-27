@@ -6,11 +6,11 @@ import {
   FaCheckCircle, FaBrain,
 } from "react-icons/fa";
 
-const IMG_WIDE   = "https://images.unsplash.com/photo-1670586751538-497f3af8af97?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXR0bGUlMjBmYXJtJTIwd2lkZSUyMGdyZWVuJTIwbGFuZHNjYXBlJTIwSW5kb25lc2lhfGVufDF8fHx8MTc3NzEwNTAwNXww&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_SENSOR = "https://images.unsplash.com/photo-1762381650890-43b1030fc842?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3clMjBlYXIlMjB0YWclMjBJb1QlMjB3ZWFyYWJsZSUyMHNlbnNvciUyMGNvbHNlJTIwdXB8ZW58MXx8fHwxNzc3MTA1MDA2fDA&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_TEAM   = "https://images.unsplash.com/photo-1581092336210-c892d7da9690?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyZSUyMHRlY2hub2xvZ3klMjBpbm5vdmF0aW9uJTIwc3RhcnR1cCUyMHRlYW18ZW58MXx8fHwxNzc3MTA1MDExfDA&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_VET    = "https://images.unsplash.com/photo-1761872936268-b6aea93552a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZXRlcmluYXJpYW4lMjBmYXJtZXIlMjB3b3JraW5nJTIwY2F0dGxlJTIwb3V0ZG9vcnxlbnwxfHx8fDE3NzcxMDUwMDZ8MA&ixlib=rb-4.1.0&q=80&w=1080";
-const IMG_HERD   = "https://images.unsplash.com/photo-1691886789655-0c71dbd54044?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYWlyeSUyMGNvdyUyMGhlcmQlMjBncmVlbiUyMHBhc3R1cmV8ZW58MXx8fHwxNzc3MTA0MDczfDA&ixlib=rb-4.1.0&q=80&w=1080";
+const IMG_SENSOR = "/image/sapi/sapi5.jpeg";
+const IMG_WIDE =   "/image/sapi/sapi2.jpeg";
+const IMG_TEAM   = "/image/tim.jpeg";
+const IMG_VET    = "/image/sapi/sapi3.jpeg";
+const IMG_HERD   = "/image/sapi/sapi4.jpeg";
 
 const goals = [
   {

@@ -8,16 +8,13 @@ import {
 } from "react-icons/fa";
 
 const IMG = {
-  hero:        "https://images.unsplash.com/photo-1680723341624-f38fcfe4f693?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXR0bGUlMjBmYXJtJTIwd2lkZSUyMGdyZWVuJTIwbGFuZHNjYXBlJTIwSW5kb25lc2lhfGVufDF8fHx8MTc3NzEwNTAwNXww&ixlib=rb-4.1.0&q=80&w=1080",
-  farmer:      "https://images.unsplash.com/photo-1642439994493-3816a23c997a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtZXIlMjB1c2luZyUyMHRhYmxldCUyMHNtYXJ0JTIwYWdyaWN1bHR1cmUlMjBmaWVsZHxlbnwxfHx8MTc3NzEwNTAwNXww&ixlib=rb-4.1.0&q=80&w=1080",
-  herd:        "https://images.unsplash.com/photo-1691886789655-0c71dbd54044?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYWlyeSUyMGNvdyUyMGhlcmQlMjBncmVlbiUyMHBhc3R1cmV8ZW58MXx8fHwxNzc3MTA0MDczfDA&ixlib=rb-4.1.0&q=80&w=1080",
-  sensor:      "https://images.unsplash.com/photo-1648994594394-daf858a463d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxJb1QlMjBzZW5zb3IlMjBjb2xsYXIlMjBlYXIlMjB0YWclMjBjYXR0bGUlMjBtb25pdG9yaW5nfGVufDF8fHx8MTc3NzEwNDA3NHww&ixlib=rb-4.1.0&q=80&w=1080",
-  vet:         "https://images.unsplash.com/photo-1598555800431-229e18bc8ac5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZXRlcmluYXJpYW4lMjBkb2N0b3IlMjBjaGVja2luZyUyMGNvdyUyMGhlYWx0aHxlbnwxfHx8MTc3NzEwNDA3NHww&ixlib=rb-4.1.0&q=80&w=1080",
-  barn:        "https://images.unsplash.com/photo-1628295934652-8f46c0423c2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXR0bGUlMjBicmVlZGluZyUyMGZhcm0lMjBiYXJuJTIwc3RhYmxlfGVufDF8fHx8MTc3NzEwNDA3Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-  farmerPort:  "https://images.unsplash.com/photo-1776572212829-d62603ee16ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGZhcm1lciUyMHBvcnRyYWl0JTIwb3V0ZG9vciUyMGZhcm18ZW58MXx8fHwxNzc3MTA0MDc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-  cow:         "https://images.unsplash.com/photo-1762592734190-8a2f3b9cdee6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3clMjBlYXIlMjB0YWclMjBJb1QlMjB3ZWFyYWJsZSUyMHNlbnNvciUyMGNvbHNlJTIwdXB8ZW58MXx8fHwxNzc3MTA0MDc5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-  sunrise:     "https://images.unsplash.com/photo-1774463781617-9dc583b82fbe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXR0bGUlMjBmYXJtJTIwd2lkZSUyMGdyZWVuJTIwbGFuZHNjYXBlJTIwSW5kb25lc2lhfGVufDF8fHx8MTc3NzEwNTAwNXww&ixlib=rb-4.1.0&q=80&w=1080",
-  womanFarmer: "https://images.unsplash.com/photo-1628423098951-8650fe174ca4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGZhcm1lciUyMHNtaWxpbmclMjBhZ3JpY3VsdHVyZSUyMG1vcm5hbmdkc2NhcGV8ZW58MXx8fHwxNzc3MTA0MDgwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+  farmer:      "/image/tim.jpeg",
+  herd:        "/image/sapi/sapi2.jpeg",
+  sensor:      "/image/sapi/sapi5.jpeg",
+  vet:         "/image/sapi/sapi3.jpeg",
+  cow:         "/image/sapi/sapi1.jpeg",
+  barn:        "/image/sapi/sapi4.jpeg",
+  sunrise:     "/image/sapi/sapi6.jpeg",
 };
 
 const services = [
@@ -45,8 +42,7 @@ export default function HomePage() {
     <div className="landing-page">
       <section className="relative min-h-screen flex flex-col overflow-hidden">
         <div className="absolute inset-0">
-          <img src={IMG.hero} alt="Farm" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 landing-hero-overlay" />
+        <img src={IMG.herd} alt="Farm" className="w-full h-full object-cover" />          <div className="absolute inset-0 landing-hero-overlay" />
         </div>
         <div className="absolute bottom-32 left-32 w-56 h-56 rounded-full border-2 border-brand-forest/20 hidden lg:block" />
         <div className="absolute bottom-20 left-20 w-32 h-32 rounded-full border border-brand-forest/10 hidden lg:block" />
